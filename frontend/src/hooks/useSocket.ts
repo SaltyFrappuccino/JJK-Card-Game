@@ -59,5 +59,19 @@ export const useWS = () => {
     }
   };
 
-  return { send, emitPlayCard, emitEndTurn, emitDiscardCards };
+  const emitAddDummy = () => {
+    const gameId = game?.game_id;
+    if (gameId) {
+      send('add_dummy', { game_id: gameId });
+    }
+  };
+
+  const emitRemoveDummy = (dummyId: string) => {
+    const gameId = game?.game_id;
+    if (gameId) {
+      send('remove_dummy', { game_id: gameId, dummy_id: dummyId });
+    }
+  };
+
+  return { send, emitPlayCard, emitEndTurn, emitDiscardCards, emitAddDummy, emitRemoveDummy };
 }; 

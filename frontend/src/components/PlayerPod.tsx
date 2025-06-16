@@ -9,16 +9,21 @@ interface PlayerPodProps {
   player: Player;
   isCurrent: boolean;
   isTargetable: boolean;
-  onSelect?: (playerId: string) => void;
+  onSelect?: (playerId: string, event?: React.MouseEvent) => void;
   isSelf?: boolean;
   onEndTurn?: () => void;
   viewerIsGojo?: boolean;
+  isTraining?: boolean;
+  onRemoveDummy?: (dummyId: string) => void;
 }
 
-const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, onSelect, isSelf = false, onEndTurn, viewerIsGojo = false }) => {
-  const hpPercent = player.hp && player.character ? (player.hp / player.character.max_hp) * 100 : 0;
+const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, onSelect, isSelf = false, onEndTurn, viewerIsGojo = false, isTraining = false, onRemoveDummy }) => {
+  const maxHp = player.character?.max_hp || player.max_hp || 1;
+  const hpPercent = player.hp ? (player.hp / maxHp) * 100 : 0;
+  
   const canSeeEnergy = isSelf || viewerIsGojo;
-  const energyPercent = canSeeEnergy && player.energy && player.character ? (player.energy / player.character.max_energy) * 100 : 100;
+  const maxEnergy = player.character?.max_energy || 1;
+  const energyPercent = canSeeEnergy && player.energy ? (player.energy / maxEnergy) * 100 : 100;
 
   return (
     <div
@@ -28,7 +33,8 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
         'defeated': player.status === 'DEFEATED',
         'self-player': isSelf,
       })}
-      onClick={() => onSelect && isTargetable && player.status !== 'DEFEATED' && onSelect(player.id)}
+      onClick={(event) => onSelect && isTargetable && player.status !== 'DEFEATED' && onSelect(player.id, event)}
+      onContextMenu={(event) => onSelect && isTargetable && player.status !== 'DEFEATED' && onSelect(player.id, event)}
     >
       <div className="player-info">
         <span className="nickname">{player.nickname}</span>
@@ -46,11 +52,11 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
       <div className="status-bars">
         <div className="hp-bar">
           <div className="hp-fill" style={{ width: `${hpPercent}%` }}></div>
-          <span className="hp-text">{player.hp} / {player.character?.max_hp}</span>
+          <span className="hp-text">{player.hp} / {maxHp}</span>
         </div>
         <div className="energy-bar">
           <div className="energy-fill" style={{ width: `${energyPercent}%` }}></div>
-          <span className="energy-text">{canSeeEnergy ? `${player.energy} / ${player.character?.max_energy}` : '???'}</span>
+          <span className="energy-text">{canSeeEnergy ? `${player.energy} / ${player.character?.max_energy ?? '??'}` : '???'}</span>
         </div>
       </div>
       {player.block > 0 && <div className="block-indicator">Block: {player.block}</div>}
@@ -78,6 +84,9 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
       </div>
       {isSelf && isCurrent && onEndTurn && (
         <button className="end-turn-button" onClick={onEndTurn}>Конец хода</button>
+      )}
+      {isTraining && player.id.startsWith("dummy") && onRemoveDummy && (
+        <button className="remove-dummy-btn" onClick={() => onRemoveDummy(player.id)}>Удалить</button>
       )}
     </div>
   );

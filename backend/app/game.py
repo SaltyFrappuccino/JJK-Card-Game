@@ -72,8 +72,14 @@ class GameManager:
 
         is_free_udar = card_to_play.name == "Удар" and any(e.name == "Бесплатный Удар" for e in player.effects)
         
-        if not is_free_udar and player.energy < card_to_play.cost: 
-            raise GameException("Недостаточно Проклятой Энергии.")
+        player.chant_active_for_turn = False
+        chant_effect = next((e for e in player.effects if e.name == "Песнопение (Чант)"), None)
+        if chant_effect and card_to_play.type == CardType.TECHNIQUE:
+            player.chant_active_for_turn = True
+
+        if not game.is_training:
+            if not is_free_udar and player.energy < card_to_play.cost:
+                raise GameException("Недостаточно Проклятой Энергии.")
 
         # --- Conditional Cards ---
         if card_to_play.name in ["Мнимая техника: 'Фиолетовый'", "Мнимый Фиолетовый: Ядерный"]:
@@ -97,14 +103,18 @@ class GameManager:
 
         player.hand.remove(card_to_play)
         player.discard_pile.append(card_to_play)
+        
+        if player.chant_active_for_turn:
+            if chant_effect: player.effects.remove(chant_effect)
 
-        chant_effect = next((e for e in player.effects if e.name == "Песнопение (Чант)"), None)
-        if chant_effect and card_to_play.type != CardType.TECHNIQUE:
-            pass # Chant is not consumed
-        elif chant_effect:
-             player.effects.remove(chant_effect)
-
-        game.game_log.append(f"{player.nickname} играет {card_name}" + (f" на {self._find_player(game, target_id).nickname}" if target_id else ""))
+        if targets_ids:
+            target_names = [self._find_player(game, tid).nickname for tid in targets_ids if self._find_player(game, tid)]
+            game.game_log.append(f"{player.nickname} играет {card_name} на {', '.join(target_names)}")
+        elif target_id:
+            target = self._find_player(game, target_id)
+            game.game_log.append(f"{player.nickname} играет {card_name} на {target.nickname}")
+        else:
+            game.game_log.append(f"{player.nickname} играет {card_name}")
         
         effect_function = self._get_effect_function(card_name)
         if effect_function:
@@ -114,6 +124,10 @@ class GameManager:
         if game.game_state != GameState.FINISHED:
             self._check_game_over(game)
 
+        if game.is_training:
+            player.hand.append(card_to_play.copy(deep=True))
+
+        player.chant_active_for_turn = False
         return game
 
     def end_turn(self, game_id: str, player_id: str) -> Game:
@@ -127,8 +141,17 @@ class GameManager:
         
         current_turn_index = game.current_turn_player_index
         next_turn_index = (current_turn_index + 1) % len(game.players)
-        
-        if next_turn_index == 0:
+
+        # Skip turns for dummies
+        if game.is_training:
+            while "dummy" in game.players[next_turn_index].id:
+                if next_turn_index == game.current_turn_player_index:
+                    # This should not happen, but as a safeguard
+                    break
+                next_turn_index = (next_turn_index + 1) % len(game.players)
+
+        # Check if a full round has passed
+        if next_turn_index <= game.current_turn_player_index:
              self._start_new_round(game)
         
         game.current_turn_player_index = next_turn_index
@@ -166,19 +189,28 @@ class GameManager:
         
         for p in game.players:
             if p.status == PlayerStatus.ALIVE:
+                if game.is_training and "dummy" in p.id:
+                    p.hp = p.max_hp
+                    continue
+                
                 p.block = 0
                 max_hand = 5
-                if p.character.name == "Сатору Годзё": max_hand = 6
+                if p.character and p.character.name == "Сатору Годзё": max_hand = 6
                 if any(e.name == "Искажение души" for e in p.effects): max_hand -= 1
                 if any(e.name == "Истинная и Взаимная Любовь" for e in p.effects): max_hand = 8
                 
                 self._draw_cards(p, max_hand)
-                p.energy = min(p.character.max_energy, p.energy + int(p.character.max_energy * 0.20))
+                if p.character:
+                    p.energy = min(p.character.max_energy, p.energy + int(p.character.max_energy * 0.20))
         
         # Determine turn order for the new round
         start_index = game.current_turn_player_index
         game.current_turn_player_index = (start_index + 1) % len(game.players)
 
+        # Ensure the real player always starts first in training
+        if game.is_training:
+            real_player_index = next((i for i, p in enumerate(game.players) if "dummy" not in p.id), 0)
+            game.players.insert(0, game.players.pop(real_player_index))
 
     def _draw_cards(self, player: Player, max_hand_size: int):
         while len(player.hand) < max_hand_size:
@@ -192,19 +224,41 @@ class GameManager:
     def _create_game_from_lobby(self, lobby: Lobby) -> Game:
         game_id = f"game_{len(self.games) + 1}"
         players = lobby.players
-        for player in players:
-            player.energy = 0
-            self._build_deck_for_player(player)
-            self._draw_cards(player, 6 if player.character.name == "Сатору Годзё" else 5)
         
-        random.shuffle(players)
+        if lobby.is_training:
+            player = players[0]
+            player.energy = 99999
+            player.deck = []
+            all_cards = [card.copy(deep=True) for card in player.character.unique_cards]
+            all_cards.extend([card.copy(deep=True) for card in common_cards])
+            player.hand = all_cards
+            
+            for i in range(7):
+                dummy_id = f"dummy_{i+1}"
+                dummy = Player(id=f"dummy_{i+1}", nickname=f"Манекен {i+1}", hp=10000, max_hp=10000, energy=0, block=0, status=PlayerStatus.ALIVE)
+                players.append(dummy)
+        else:
+            for player in players:
+                player.energy = 0
+                self._build_deck_for_player(player)
+                self._draw_cards(player, 6 if player.character and player.character.name == "Сатору Годзё" else 5)
         
+        # In training, the real player should always be first.
+        if lobby.is_training:
+            real_player_index = next((i for i, p in enumerate(players) if "dummy" not in p.id), -1)
+            if real_player_index != -1:
+                real_player = players.pop(real_player_index)
+                players.insert(0, real_player)
+        else:
+            random.shuffle(players)
+
         game = Game(
             game_id=game_id,
             players=players,
             current_turn_player_index=0,
             game_state=GameState.IN_GAME,
-            game_log=[f"Игра {game_id} началась!"]
+            game_log=[f"Игра {game_id} началась!"],
+            is_training=lobby.is_training,
         )
         return game
 
@@ -222,7 +276,7 @@ class GameManager:
             opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
             for op in opponents: self._deal_damage(game, player, op, 1000, ignores_block=True)
         
-        if player.character.name == "Юта Оккоцу":
+        if player.character and player.character.name == "Юта Оккоцу":
             opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
             if opponents:
                 target = random.choice(opponents)
@@ -254,18 +308,23 @@ class GameManager:
         if target.status == PlayerStatus.DEFEATED: return
 
         # Yuta Passive (Copy)
-        if target.character.name == "Юта Оккоцу" and card_type == CardType.TECHNIQUE and source_player.id != target.id:
+        if target.character and target.character.name == "Юта Оккоцу" and card_type == CardType.TECHNIQUE and source_player.id != target.id:
             copied_card = card.copy(deep=True)
             copied_card.cost = int(copied_card.cost * 1.25)
             target.discard_pile.append(copied_card)
             game.game_log.append(f"Рика скопировала {card.name} для {target.nickname}!")
 
         # Sukuna Passive (Energy)
-        if target.character.name == "Рёмен Сукуна" and (source_player.hp / source_player.character.max_hp) > (target.hp / target.character.max_hp):
+        if target.character and target.character.name == "Рёмен Сукуна" and \
+           source_player.max_hp and source_player.hp and target.max_hp and target.hp and \
+           (source_player.hp / source_player.max_hp) > (target.hp / target.max_hp):
              target.energy = min(target.character.max_energy, target.energy + 3000)
              game.game_log.append(f"Жажда Развлечений дарует {target.nickname} 3000 ПЭ!")
 
         actual_damage = damage
+        if source_player.chant_active_for_turn:
+            actual_damage = int(actual_damage * 1.5)
+
         if not ignores_block:
             blocked_damage = min(target.block, actual_damage)
             target.block -= blocked_damage
@@ -304,11 +363,11 @@ class GameManager:
         if not target: return game
         
         damage = 300
-        if player.character.name == "Юдзи Итадори": damage += 150
+        if player.character and player.character.name == "Юдзи Итадори": damage += 150
         if any(e.name == "Истинное Тело Изощрённых Убийств" for e in player.effects): damage *= 3
         
         final_damage = damage
-        if target.character.name == "Махито": final_damage = 0
+        if target.character and target.character.name == "Махито": final_damage = 0
         if any(e.name == "Истинное Тело Изощрённых Убийств" for e in target.effects): final_damage = int(damage * 0.5)
 
         self._deal_damage(game, player, target, final_damage)
@@ -488,10 +547,13 @@ class GameManager:
         self._apply_effect(game, player, player, "Последний Бой", 5)
         return game
     
-    def _effect_sikigami_ugolki(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
+    def _effect_sikigami_ugolki(self, game: Game, player: Player, target_id: str, targets_ids: list[str]):
+        if not targets_ids:
+            return game
         targets = [self._find_player(game, tid) for tid in targets_ids]
-        for t in targets:
-            if t: self._deal_damage(game, player, t, 300)
+        for target in targets:
+            if target:
+                self._deal_damage(game, player, target, 300)
         return game
 
     def _effect_izverzhenie_vulkana(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -590,5 +652,33 @@ class GameManager:
             return alive_players[(alive_index + 1) % len(alive_players)]
         except StopIteration:
             return None
+
+    def add_dummy(self, game_id: str) -> Game:
+        game = self.get_game(game_id)
+        if not game or not game.is_training:
+            raise GameException("Нельзя добавить манекен в этой игре.")
+        
+        # Find the highest dummy number to avoid ID conflicts
+        dummy_numbers = [int(p.id.split('_')[1]) for p in game.players if "dummy" in p.id]
+        next_dummy_num = max(dummy_numbers) + 1 if dummy_numbers else 1
+        
+        dummy_id = f"dummy_{next_dummy_num}"
+        dummy = Player(id=dummy_id, nickname=f"Манекен {next_dummy_num}", hp=10000, max_hp=10000, energy=0, block=0, status=PlayerStatus.ALIVE)
+        game.players.append(dummy)
+        game.game_log.append(f"Добавлен {dummy.nickname}")
+        return game
+    
+    def remove_dummy(self, game_id: str, dummy_id: str) -> Game:
+        game = self.get_game(game_id)
+        if not game or not game.is_training:
+            raise GameException("Нельзя удалить манекен из этой игры.")
+
+        dummy_to_remove = self._find_player(game, dummy_id)
+        if not dummy_to_remove or "dummy" not in dummy_to_remove.id:
+            raise GameException("Манекен не найден.")
+            
+        game.players.remove(dummy_to_remove)
+        game.game_log.append(f"Удален {dummy_to_remove.nickname}")
+        return game
 
 game_manager = GameManager()

@@ -6,16 +6,25 @@ import PlayerPod from '../components/PlayerPod';
 import CardComponent from '../components/Card';
 import type { Card } from '../types';
 
+const getMultiTargetCount = (card: Card): number | null => {
+  if (card.name === 'Сикигами «Угольки»') {
+    return 3;
+  }
+  return null;
+};
+
 const GamePage: React.FC = () => {
   const { game, player: self, reset: resetGame } = useGameStore();
-  const { emitPlayCard, emitEndTurn, emitDiscardCards } = useWS();
+  const { emitPlayCard, emitEndTurn, emitDiscardCards, emitAddDummy, emitRemoveDummy } = useWS();
   const navigate = useNavigate();
 
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [targeting, setTargeting] = useState(false);
   const [discardMode, setDiscardMode] = useState(false);
   const [discardSelection, setDiscardSelection] = useState<Card[]>([]);
+  const [multiTargetSelection, setMultiTargetSelection] = useState<string[]>([]);
 
+  const multiTargetCount = useMemo(() => selectedCard ? getMultiTargetCount(selectedCard) : null, [selectedCard]);
   const currentPlayer = useMemo(() => game ? game.players[game.current_turn_player_index] : null, [game]);
   const selfPlayer = useMemo(() => game?.players.find(p => p.id === self?.id), [game, self]);
   const hasDiscardedThisRound = selfPlayer && game ? selfPlayer.last_discard_round === game.round_number : false;
@@ -37,18 +46,56 @@ const GamePage: React.FC = () => {
       // Deselect on second click
       setSelectedCard(null);
       setTargeting(false);
+      setMultiTargetSelection([]);
     } else {
       setSelectedCard(card);
       setTargeting(true);
+      setMultiTargetSelection([]);
     }
   };
   
-  const handlePlayerSelect = (targetId: string) => {
-    if (selectedCard && selfPlayer?.id) {
+  const handlePlayerSelect = (targetId: string, event?: React.MouseEvent) => {
+    if (!selectedCard || !selfPlayer?.id) return;
+
+    // If it's a multi-target card
+    if (multiTargetCount) {
+      if (event?.type === 'contextmenu') {
+        event.preventDefault();
+        const newSelection = [...multiTargetSelection];
+        const indexToRemove = newSelection.lastIndexOf(targetId);
+        if (indexToRemove > -1) {
+          newSelection.splice(indexToRemove, 1);
+          setMultiTargetSelection(newSelection);
+        }
+        return;
+      }
+
+      if (multiTargetSelection.length < multiTargetCount) {
+        const newSelection = [...multiTargetSelection, targetId];
+        setMultiTargetSelection(newSelection);
+
+        if (newSelection.length === multiTargetCount) {
+          // Auto-confirm when max targets are selected
+          emitPlayCard(selectedCard.name, undefined, newSelection);
+          setSelectedCard(null);
+          setTargeting(false);
+          setMultiTargetSelection([]);
+        }
+      }
+    } else { // If it's a single-target card
       emitPlayCard(selectedCard.name, targetId);
       setSelectedCard(null);
       setTargeting(false);
     }
+  };
+
+  const confirmMultiTarget = () => {
+    if (!selectedCard || multiTargetSelection.length === 0) return;
+    
+    emitPlayCard(selectedCard.name, undefined, multiTargetSelection);
+    setSelectedCard(null);
+    setTargeting(false);
+    setMultiTargetSelection([]);
   };
 
   const handleEndTurn = () => {
@@ -105,6 +152,16 @@ const GamePage: React.FC = () => {
   return (
     <div className="game-page">
       <div className="turn-indicator">Ход: {currentPlayer?.nickname}</div>
+      {targeting && multiTargetCount && (
+        <div className="targeting-indicator">
+            Выберите целей: {multiTargetSelection.length} / {multiTargetCount}
+            <br />
+            (ПКМ для отмены выбора)
+            {multiTargetSelection.length > 0 && (
+              <button onClick={confirmMultiTarget} style={{marginLeft: '10px'}}>Подтвердить</button>
+            )}
+        </div>
+      )}
       <div className="game-board">
         <div className="player-pods-container">
           {orderedPlayers.filter(p=> p.id !== selfPlayer.id).map(p => (
@@ -113,8 +170,10 @@ const GamePage: React.FC = () => {
               player={p} 
               isCurrent={p.id === currentPlayer?.id}
               isTargetable={targeting}
-              onSelect={handlePlayerSelect}
+              onSelect={(targetId, event) => handlePlayerSelect(targetId, event)}
               viewerIsGojo={viewerIsGojo}
+              isTraining={game.is_training}
+              onRemoveDummy={emitRemoveDummy}
             />
           ))}
         </div>
@@ -127,7 +186,7 @@ const GamePage: React.FC = () => {
       </div>
       <div className="player-ui">
         <div className="own-player-pod">
-           <PlayerPod player={selfPlayer} isCurrent={isMyTurn} isTargetable={targeting} onSelect={handlePlayerSelect} isSelf={true} onEndTurn={handleEndTurn} viewerIsGojo={viewerIsGojo} />
+           <PlayerPod player={selfPlayer} isCurrent={isMyTurn} isTargetable={targeting} onSelect={(targetId, event) => handlePlayerSelect(targetId, event)} isSelf={true} onEndTurn={handleEndTurn} viewerIsGojo={viewerIsGojo} />
         </div>
         <div className="player-hand">
           {selfPlayer.hand.map((card, i) => (
@@ -156,6 +215,11 @@ const GamePage: React.FC = () => {
                   <button onClick={handleToggleDiscardMode}>Отмена</button>
                 </div>
               )}
+            </div>
+          )}
+          {game.is_training && (
+            <div className="training-controls">
+              <button onClick={() => emitAddDummy()}>Добавить манекен</button>
             </div>
           )}
         </div>

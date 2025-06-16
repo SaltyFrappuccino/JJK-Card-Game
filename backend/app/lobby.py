@@ -18,10 +18,10 @@ def _generate_lobby_id():
             return lobby_id
 
 class LobbyManager:
-    async def create_lobby(self, host_id: str, nickname: str) -> Lobby:
+    async def create_lobby(self, host_id: str, nickname: str, is_training: bool = False) -> Lobby:
         lobby_id = _generate_lobby_id()
         host = Player(id=host_id, nickname=nickname)
-        lobby = Lobby(id=lobby_id, host_id=host_id, players=[host])
+        lobby = Lobby(id=lobby_id, host_id=host_id, players=[host], is_training=is_training)
         lobbies[lobby_id] = lobby
         return lobby
 
@@ -62,6 +62,7 @@ class LobbyManager:
 
         player.character = character_template
         player.hp = character_template.max_hp
+        player.max_hp = character_template.max_hp
         player.energy = character_template.max_energy
         
         await broadcast(lobby_id, {"type": "lobby_update", "payload": lobby.dict()})
@@ -73,10 +74,12 @@ class LobbyManager:
             raise LobbyNotFound("Lobby not found.")
         if lobby.host_id != player_id:
             raise LobbyException("Только хост может начать игру.")
-        if len(lobby.players) < 2:
-            raise LobbyException("Для начала игры нужно минимум 2 игрока.")
-        if any(p.character is None for p in lobby.players):
-            raise LobbyException("Не все игроки выбрали персонажа.")
+        
+        if not lobby.is_training:
+            if len(lobby.players) < 2:
+                raise LobbyException("Для начала игры нужно минимум 2 игрока.")
+            if any(p.character is None for p in lobby.players):
+                raise LobbyException("Не все игроки выбрали персонажа.")
             
         game = game_manager.start_game(lobby)
         

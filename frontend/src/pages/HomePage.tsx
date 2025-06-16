@@ -41,6 +41,22 @@ const HomePage: React.FC = () => {
         }
     };
 
+    const handleTraining = async () => {
+        if (nickname.trim()) {
+            try {
+                const { data } = await api.createTrainingLobby(nickname);
+                setPlayer({ id: data.player_id, nickname: nickname });
+                setLobby(data.lobby_info);
+                navigate(`/lobby/${data.lobby_info.id}`);
+            } catch (error: any) {
+                console.error("Failed to create training lobby:", error);
+                alert(`Не удалось войти в тренировку: ${error.response?.data?.detail || 'Попробуйте снова.'}`);
+            }
+        } else {
+            alert('Пожалуйста, введите никнейм.');
+        }
+    };
+
     return (
         <div className="home-container">
             <h1>Jujutsu Kaisen: Heian Cards Clash</h1>
@@ -63,6 +79,9 @@ const HomePage: React.FC = () => {
                     className="input-field"
                 />
                 <button onClick={handleJoinLobby} className="btn btn-secondary">Присоединиться</button>
+            </div>
+            <div className="menu-box">
+                <button onClick={handleTraining} className="btn">Тренировка</button>
             </div>
         </div>
     );

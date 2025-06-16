@@ -32,6 +32,7 @@ export interface Player {
   nickname: string;
   character?: Character;
   hp?: number;
+  max_hp?: number;
   energy?: number;
   block: number;
   hand: Card[];
@@ -46,6 +47,7 @@ export interface LobbyInfo {
   id: string;
   host_id: string;
   players: Player[];
+  is_training: boolean;
 }
 
 export type GameStateEnum = 'LOBBY' | 'IN_GAME' | 'FINISHED';
@@ -58,4 +60,5 @@ export interface GameState {
   game_state: GameStateEnum;
   active_domain?: Card;
   game_log: string[];
+  is_training: boolean;
 } 

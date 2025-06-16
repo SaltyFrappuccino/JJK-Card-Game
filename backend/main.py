@@ -78,6 +78,20 @@ async def websocket_endpoint(ws: WebSocket, lobby_id: str, player_id: str):
                 except GameException as e:
                     await ws.send_json({"type": "error", "payload": str(e)})
 
+            elif msg_type == "add_dummy":
+                try:
+                    game = game_manager.add_dummy(payload.get("game_id"))
+                    await broadcast(lobby_id, {"type": "game_state", "payload": game.dict()})
+                except GameException as e:
+                    await ws.send_json({"type": "error", "payload": str(e)})
+            
+            elif msg_type == "remove_dummy":
+                try:
+                    game = game_manager.remove_dummy(payload.get("game_id"), payload.get("dummy_id"))
+                    await broadcast(lobby_id, {"type": "game_state", "payload": game.dict()})
+                except GameException as e:
+                    await ws.send_json({"type": "error", "payload": str(e)})
+
     except WebSocketDisconnect:
         await unregister(lobby_id, player_id)
 

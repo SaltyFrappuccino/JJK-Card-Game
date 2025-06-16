@@ -22,6 +22,17 @@ async def create_lobby(player: PlayerCreate, lm: LobbyManager = Depends(get_lobb
     )
     return LobbyJoinResponse(lobby_info=lobby_info, player_id=host_id)
 
+@router.post("/lobby/training", response_model=LobbyJoinResponse)
+async def create_training_lobby(player: PlayerCreate, lm: LobbyManager = Depends(get_lobby_manager)):
+    host_id = str(uuid.uuid4())
+    lobby = await lm.create_lobby(host_id, player.nickname, is_training=True)
+    lobby_info = LobbyInfo(
+        id=lobby.id,
+        host_id=lobby.host_id,
+        players=[PlayerInfo(**p.dict()) for p in lobby.players]
+    )
+    return LobbyJoinResponse(lobby_info=lobby_info, player_id=host_id)
+
 @router.get("/lobby/{lobby_id}", response_model=LobbyInfo)
 async def get_lobby(lobby_id: str, lm: LobbyManager = Depends(get_lobby_manager)):
     lobby = lm.get_lobby(lobby_id)

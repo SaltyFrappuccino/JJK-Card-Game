@@ -52,24 +52,29 @@ const LobbyPage: React.FC = () => {
   
   const isHost = lobby.host_id === player.id;
   const allPlayersReady = lobby.players.every(p => p.character);
+  const isTraining = lobby.is_training;
 
   return (
     <div className="lobby-page">
-      <h2>Лобби: {lobby.id}</h2>
-      <button className="copy-code-btn" onClick={() => navigator.clipboard.writeText(lobby.id)}>Скопировать код</button>
+      <h2>{isTraining ? 'Тренировка' : `Лобби: ${lobby.id}`}</h2>
+      {!isTraining && (
+          <button className="copy-code-btn" onClick={() => navigator.clipboard.writeText(lobby.id)}>Скопировать код</button>
+      )}
       
       <div className="lobby-container">
-        <div className="players-list">
-          <h3>Игроки ({lobby.players.length}/8)</h3>
-          <ul>
-            {lobby.players.map(p => (
-              <li key={p.id}>
-                {p.nickname} {p.id === lobby.host_id ? '(Host)' : ''}
-                {p.character ? ` - ${p.character.name}` : ' - Selecting...'}
-              </li>
-            ))}
-          </ul>
-        </div>
+        {!isTraining && (
+          <div className="players-list">
+            <h3>Игроки ({lobby.players.length}/8)</h3>
+            <ul>
+              {lobby.players.map(p => (
+                <li key={p.id}>
+                  {p.nickname} {p.id === lobby.host_id ? '(Host)' : ''}
+                  {p.character ? ` - ${p.character.name}` : ' - Selecting...'}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         
         <div className="character-selection">
           <h3>Выберите персонажа</h3>
@@ -103,7 +108,7 @@ const LobbyPage: React.FC = () => {
       </div>
 
       {isHost && (
-        <button className="start-game-btn" onClick={handleStartGame} disabled={!allPlayersReady || isStarting}>
+        <button className="start-game-btn" onClick={handleStartGame} disabled={(!isTraining && !allPlayersReady) || isStarting}>
           {isStarting ? 'Запуск...' : 'Начать игру'}
         </button>
       )}

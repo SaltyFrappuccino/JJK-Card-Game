@@ -47,6 +47,7 @@ class Player(BaseModel):
     nickname: str
     character: Optional[Character] = None
     hp: Optional[int] = None
+    max_hp: Optional[int] = None # For dummies mostly
     energy: Optional[int] = None
     block: int = 0
     hand: List[Card] = []
@@ -60,11 +61,14 @@ class Player(BaseModel):
     used_red: bool = False
     # Mahito's state for "True Body"
     successful_black_flash: bool = False
+    # For chant effect
+    chant_active_for_turn: bool = False
 
 class Lobby(BaseModel):
     id: str
     host_id: str
     players: List[Player] = []
+    is_training: bool = False
     
 class GameState(str, Enum):
     LOBBY = "LOBBY"
@@ -79,3 +83,4 @@ class Game(BaseModel):
     game_state: GameState = GameState.IN_GAME
     active_domain: Optional[Card] = None
     game_log: List[str] = []
+    is_training: bool = False
