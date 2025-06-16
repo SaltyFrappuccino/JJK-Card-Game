@@ -1,18 +1,26 @@
 :root {
   --primary-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* Основная тёмная палитра */
   --background-color: #0a0f18;
-  --panel-color: rgba(17, 24, 39, 0.8);
-  --border-color: #2c3e50;
-  --text-color: #ecf0f1;
-  --accent-color-1: #3498db;
-  --accent-color-2: #e74c3c;
-  --success-color: #2ecc71;
-  --error-color: #e74c3c;
+  --background-color-2: #2d0000; /* мрачный красный оттенок */
+  --panel-color: rgba(20, 20, 28, 0.85);
+  --border-color: #33394d;
+  --text-color: #e0e6ed;
 
-  --rarity-common: #bdc3c7;
-  --rarity-uncommon: #2ecc71;
-  --rarity-rare: #3498db;
-  --rarity-epic: #9b59b6;
+  /* Акценты */
+  --electric-blue: #4A00E0; /* техника Годзё */
+  --electric-blue-light: #8E2DE2;
+  --blood-red: #c0392b; /* кровь / Сукуна */
+  --purple-curse: #9b59b6; /* аура проклятий */
+
+  --accent-color-1: var(--electric-blue);
+  --accent-color-2: var(--blood-red);
+
+  /* Редкости карт */
+  --rarity-common: #7f8c8d;
+  --rarity-uncommon: #27ae60;
+  --rarity-rare: var(--electric-blue-light);
+  --rarity-epic: var(--purple-curse);
   --rarity-legendary: #f1c40f;
 }
 
@@ -21,11 +29,13 @@ body {
   font-family: var(--primary-font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--background-color);
   color: var(--text-color);
-  background-image: url('/src/assets/background.jpg'); /* Thematic background */
-  background-size: cover;
-  background-position: center;
+  min-height: 100vh;
+
+  /* Динамичный градиент: тёмный → кроваво-красный */
+  background: radial-gradient(circle at 20% 20%, rgba(74,0,224,0.15) 0%, transparent 40%),
+              radial-gradient(circle at 80% 80%, rgba(192,57,43,0.2) 0%, transparent 50%),
+              linear-gradient(135deg, var(--background-color) 0%, var(--background-color-2) 100%);
   background-attachment: fixed;
 }
 

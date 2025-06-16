@@ -1,7 +1,9 @@
 import React from 'react';
 import type { Player } from '../types';
 import clsx from 'clsx';
-import { EFFECTS_INFO } from '../assets/effectsInfo';
+import { effectsInfo } from '../assets/effectsInfo';
+import { Tooltip } from 'react-tooltip'
+import 'react-tooltip/dist/react-tooltip.css'
 
 interface PlayerPodProps {
   player: Player;
@@ -53,19 +55,19 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
       </div>
       {player.block > 0 && <div className="block-indicator">Block: {player.block}</div>}
       <div className="effects">
-        {player.effects.map((effect, index) => {
-          const desc = EFFECTS_INFO[effect.name] ?? '';
-          return (
-            <div key={index} className="effect-icon tooltip-container">
-              {effect.name.slice(0, 2).toUpperCase()}
-              <div className="tooltip-content">
-                <strong>{effect.name}</strong>
-                {desc && <p>{desc}</p>}
-                <p>Раундов: {effect.duration}</p>
-              </div>
-            </div>
-          );
-        })}
+        {player.effects.map((effect, index) => (
+          <div key={index} className="effect-icon-container">
+            <img 
+              src={`/effects/${effect.name.replace(/:/g, '')}.png`} 
+              alt={effect.name} 
+              className="effect-icon"
+              data-tooltip-id={`tooltip-${effect.name}`}
+              data-tooltip-content={effectsInfo[effect.name as keyof typeof effectsInfo] || 'Нет описания'}
+              data-tooltip-place="top"
+            />
+            <Tooltip id={`tooltip-${effect.name}`} />
+          </div>
+        ))}
       </div>
       {isSelf && isCurrent && onEndTurn && (
         <button className="end-turn-button" onClick={onEndTurn}>Конец хода</button>

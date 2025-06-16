@@ -55,6 +55,11 @@ class Player(BaseModel):
     effects: List[Effect] = []
     status: PlayerStatus = PlayerStatus.ALIVE
     last_discard_round: int = 0  # раунд, когда игрок последний раз использовал сброс
+    # Gojo's state for "Purple"
+    used_blue: bool = False
+    used_red: bool = False
+    # Mahito's state for "True Body"
+    successful_black_flash: bool = False
 
 class Lobby(BaseModel):
     id: str

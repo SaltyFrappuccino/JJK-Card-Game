@@ -8,7 +8,7 @@
         "ui ui ui";
     grid-template-rows: 2fr 1fr;
     grid-template-columns: 1fr 1fr 300px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .game-board {

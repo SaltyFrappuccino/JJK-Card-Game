@@ -160,4 +160,20 @@
     margin-top: 8px;
 }
 
-.passive-info { position: relative; } 
+.passive-info { position: relative; }
+
+/* кнопки с новыми цветами */
+button {
+    background-color: var(--accent-color-1);
+}
+button:hover {
+    background-color: var(--electric-blue-light);
+}
+
+/* Избегаем выхода тултипа игрока-себя за левый край */
+.player-pod.self-player .tooltip-container .tooltip-content {
+    bottom: auto;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+} 

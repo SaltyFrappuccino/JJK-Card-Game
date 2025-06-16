@@ -4,84 +4,68 @@ import { api } from '../services/api';
 import useGameStore from '../store/gameStore';
 
 const HomePage: React.FC = () => {
-  const [nickname, setNickname] = useState('');
-  const [lobbyCode, setLobbyCode] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  const { setPlayer, setLobby, setError } = useGameStore();
+    const [nickname, setNickname] = useState('');
+    const [lobbyCode, setLobbyCode] = useState('');
+    const navigate = useNavigate();
+    const { setPlayer, setLobby } = useGameStore();
 
-  const handleCreateLobby = async () => {
-    if (!nickname) {
-      setError('Please enter a nickname.');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const { data } = await api.createLobby(nickname);
-      setPlayer({ id: data.player_id, nickname });
-      setLobby(data.lobby_info);
+    const handleCreateLobby = async () => {
+        if (nickname.trim()) {
+            try {
+                const { data } = await api.createLobby(nickname);
+                setPlayer({ id: data.player_id, nickname: nickname });
+                setLobby(data.lobby_info);
+                navigate(`/lobby/${data.lobby_info.id}`);
+            } catch (error: any) {
+                console.error("Failed to create lobby:", error);
+                alert(`Не удалось создать лобби: ${error.response?.data?.detail || 'Попробуйте снова.'}`);
+            }
+        } else {
+            alert('Пожалуйста, введите никнейм.');
+        }
+    };
 
-      navigate(`/lobby/${data.lobby_info.id}`);
-    } catch (error: any) {
-      setError(error.response?.data?.detail || 'Failed to create lobby.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const handleJoinLobby = async () => {
+        if (nickname.trim() && lobbyCode.trim()) {
+            try {
+                const { data } = await api.joinLobby(lobbyCode, nickname);
+                setPlayer({ id: data.player_id, nickname: nickname });
+                setLobby(data.lobby_info);
+                navigate(`/lobby/${data.lobby_info.id}`);
+            } catch (error: any) {
+                console.error("Failed to join lobby:", error);
+                alert(`Не удалось присоединиться к лобби: ${error.response?.data?.detail || 'Проверьте код и попробуйте снова.'}`);
+            }
+        } else {
+            alert('Пожалуйста, введите никнейм и код лобби.');
+        }
+    };
 
-  const handleJoinLobby = async () => {
-    if (!nickname || !lobbyCode) {
-      setError('Please enter a nickname and lobby code.');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const { data } = await api.joinLobby(lobbyCode, nickname);
-      setPlayer({ id: data.player_id, nickname });
-      setLobby(data.lobby_info);
-
-      navigate(`/lobby/${data.lobby_info.id}`);
-    } catch (error: any) {
-      setError(error.response?.data?.detail || 'Failed to join lobby.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="home-page">
-      <h1>Jujutsu Kaisen: Cursed Clash</h1>
-      <div className="form-container">
-        <input
-          type="text"
-          placeholder="Введите ваш ник"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          maxLength={32}
-          className="nickname-input"
-        />
-        <div className="lobby-actions">
-          <div className="create-lobby">
-            <button onClick={handleCreateLobby} disabled={isLoading || !nickname}>
-              {isLoading ? 'Создание...' : 'Создать игру'}
-            </button>
-          </div>
-          <div className="join-lobby">
-            <input
-              type="text"
-              placeholder="Код лобби"
-              value={lobbyCode}
-              onChange={(e) => setLobbyCode(e.target.value.toUpperCase())}
-              className="lobby-code-input"
-            />
-            <button onClick={handleJoinLobby} disabled={isLoading || !nickname || !lobbyCode}>
-              {isLoading ? 'Подключение...' : 'Присоединиться'}
-            </button>
-          </div>
+    return (
+        <div className="home-container">
+            <h1>Jujutsu Kaisen: Heian Cards Clash</h1>
+            <div className="menu-box">
+                <input
+                    type="text"
+                    placeholder="Ваш никнейм"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                    className="input-field"
+                />
+                <button onClick={handleCreateLobby} className="btn btn-primary">Создать лобби</button>
+            </div>
+            <div className="menu-box">
+                <input
+                    type="text"
+                    placeholder="Код лобби"
+                    value={lobbyCode}
+                    onChange={(e) => setLobbyCode(e.target.value.toUpperCase())}
+                    className="input-field"
+                />
+                <button onClick={handleJoinLobby} className="btn btn-secondary">Присоединиться</button>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default HomePage; 
