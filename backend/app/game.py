@@ -205,7 +205,7 @@ class GameManager:
             turn_order=turn_order,
             current_player_id=turn_order[0],
             round_start_player_id=turn_order[0],
-            status=GameState.IN_PROGRESS,
+            status=GameState.IN_GAME,
             game_log=[f"Игра {game_id} началась!"]
         )
         return game
