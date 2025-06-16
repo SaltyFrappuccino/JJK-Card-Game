@@ -4,7 +4,7 @@ import useGameStore from '../store/gameStore';
 import { useWS } from '../hooks/useSocket';
 import PlayerPod from '../components/PlayerPod';
 import CardComponent from '../components/Card';
-import type { Card, Player } from '../types';
+import type { Card } from '../types';
 
 const GamePage: React.FC = () => {
   const { game, player: self, reset: resetGame } = useGameStore();

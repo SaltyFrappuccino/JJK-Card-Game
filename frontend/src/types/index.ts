@@ -25,10 +25,7 @@ export interface Effect {
   target_id?: string;
 }
 
-export enum PlayerStatus {
-  ALIVE = "ALIVE",
-  DEFEATED = "DEFEATED",
-}
+export type PlayerStatus = 'ALIVE' | 'DEFEATED';
 
 export interface Player {
   id: string;
@@ -50,11 +47,7 @@ export interface LobbyInfo {
   players: Player[];
 }
 
-export enum GameStateEnum {
-  LOBBY = "LOBBY",
-  IN_GAME = "IN_GAME",
-  FINISHED = "FINISHED",
-}
+export type GameStateEnum = 'LOBBY' | 'IN_GAME' | 'FINISHED';
 
 export interface GameState {
   game_id: string;
