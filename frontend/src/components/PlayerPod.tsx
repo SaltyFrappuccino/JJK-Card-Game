@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Player } from '../types';
 import clsx from 'clsx';
+import { EFFECTS_INFO } from '../assets/effectsInfo';
 
 interface PlayerPodProps {
   player: Player;
@@ -9,11 +10,13 @@ interface PlayerPodProps {
   onSelect?: (playerId: string) => void;
   isSelf?: boolean;
   onEndTurn?: () => void;
+  viewerIsGojo?: boolean;
 }
 
-const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, onSelect, isSelf = false, onEndTurn }) => {
+const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, onSelect, isSelf = false, onEndTurn, viewerIsGojo = false }) => {
   const hpPercent = player.hp && player.character ? (player.hp / player.character.max_hp) * 100 : 0;
-  const energyPercent = player.energy && player.character ? (player.energy / player.character.max_energy) * 100 : 0;
+  const canSeeEnergy = isSelf || viewerIsGojo;
+  const energyPercent = canSeeEnergy && player.energy && player.character ? (player.energy / player.character.max_energy) * 100 : 100;
 
   return (
     <div
@@ -45,20 +48,24 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
         </div>
         <div className="energy-bar">
           <div className="energy-fill" style={{ width: `${energyPercent}%` }}></div>
-          <span className="energy-text">{player.energy} / {player.character?.max_energy}</span>
+          <span className="energy-text">{canSeeEnergy ? `${player.energy} / ${player.character?.max_energy}` : '???'}</span>
         </div>
       </div>
       {player.block > 0 && <div className="block-indicator">Block: {player.block}</div>}
       <div className="effects">
-        {player.effects.map((effect, index) => (
-          <div key={index} className="effect-icon tooltip-container">
-            {effect.name.slice(0, 2).toUpperCase()}
-            <div className="tooltip-content">
-              <strong>{effect.name}</strong>
-              <p>Длительность: {effect.duration}</p>
+        {player.effects.map((effect, index) => {
+          const desc = EFFECTS_INFO[effect.name] ?? '';
+          return (
+            <div key={index} className="effect-icon tooltip-container">
+              {effect.name.slice(0, 2).toUpperCase()}
+              <div className="tooltip-content">
+                <strong>{effect.name}</strong>
+                {desc && <p>{desc}</p>}
+                <p>Раундов: {effect.duration}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {isSelf && isCurrent && onEndTurn && (
         <button className="end-turn-button" onClick={onEndTurn}>Конец хода</button>

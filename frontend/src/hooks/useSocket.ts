@@ -52,5 +52,12 @@ export const useWS = () => {
     }
   };
 
-  return { send, emitPlayCard, emitEndTurn };
+  const emitDiscardCards = (cardNames: string[]) => {
+    const gameId = game?.game_id;
+    if (gameId) {
+      send('discard_cards', { game_id: gameId, card_names: cardNames });
+    }
+  };
+
+  return { send, emitPlayCard, emitEndTurn, emitDiscardCards };
 }; 

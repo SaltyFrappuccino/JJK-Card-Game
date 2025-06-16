@@ -105,6 +105,45 @@ class GameManager:
         self._check_for_winner(game)
         return game
 
+    def discard_cards(self, game_id: str, player_id: str, card_names: List[str]) -> Game:
+        game = self.get_game(game_id)
+        if not game:
+            raise GameException("Игра не найдена.")
+
+        player = self._find_player(game, player_id)
+        if not player or player.status == PlayerStatus.DEFEATED:
+            raise GameException("Игрок не найден или побежден.")
+
+        if game.players[game.current_turn_player_index].id != player_id:
+            raise GameException("Сейчас не ваш ход.")
+
+        if player.last_discard_round == game.round_number:
+            raise GameException("Вы уже использовали сброс карт в этом раунде.")
+
+        if not card_names or len(card_names) > 2:
+            raise GameException("Можно сбросить от 1 до 2 карт.")
+
+        actually_discarded = []
+        for name in card_names:
+            card = next((c for c in player.hand if c.name == name), None)
+            if card:
+                player.hand.remove(card)
+                player.discard_pile.append(card)
+                actually_discarded.append(card)
+
+        if not actually_discarded:
+            raise GameException("Выбранные карты не найдены в руке.")
+
+        # добираем такое же количество карт
+        new_cards = self._draw_cards(player, len(actually_discarded))
+        player.hand.extend(new_cards)
+
+        player.last_discard_round = game.round_number
+        game.game_log.append(
+            f"{player.nickname} сбросил {len(actually_discarded)} карт(ы) и добрал столько же." )
+
+        return game
+
     def _get_player_index(self, game: Game, player_id: str) -> int:
         for i, p in enumerate(game.players):
             if p.id == player_id:
@@ -160,13 +199,15 @@ class GameManager:
                     self._defeat_player(game, player)
 
             if player.status == PlayerStatus.ALIVE:
-                player.discard_pile.extend(player.hand)
-                player.hand = []
                 hand_size = 6 if player.character.name == "Сатору Годзё" else 5
                 # Mahito's Domain Expansion effect
                 if game.active_domain and game.active_domain.name == "Самовоплощение Совершенства" and player.id != game.active_domain.source_player_id:
                      hand_size = 4
-                player.hand = self._draw_cards(player, hand_size)
+
+                # Сохраняем карты, оставшиеся в руке, и добираем недостающие
+                missing = max(hand_size - len(player.hand), 0)
+                if missing > 0:
+                    player.hand.extend(self._draw_cards(player, missing))
                 player.energy = min(player.character.max_energy, player.energy + int(player.character.max_energy * 0.20))
                 player.block = 0
                 

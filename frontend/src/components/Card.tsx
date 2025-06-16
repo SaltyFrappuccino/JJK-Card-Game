@@ -10,16 +10,32 @@ interface CardProps {
   index?: number;
   total?: number;
   isSelected?: boolean;
+  className?: string;
 }
 
-const Card: React.FC<CardProps> = ({ card, isPlayable, onClick, index = 0, total = 1, isSelected = false }) => {
+const Card: React.FC<CardProps> = ({ card, isPlayable, onClick, index = 0, total = 1, isSelected = false, className }) => {
   const angle = (index - (total - 1) / 2) * 10;
   const yOffset = isSelected ? -80 : 0;
   const scaleVal = isSelected ? 1.25 : 1;
   const z = isSelected ? 150 : index;
+
+  const rarityMap: Record<string, string> = {
+    'Обычная': 'common',
+    'Необычная': 'uncommon',
+    'Редкая': 'rare',
+    'Эпическая': 'epic',
+    'Легендарная': 'legendary',
+    'COMMON': 'common',
+    'UNCOMMON': 'uncommon',
+    'RARE': 'rare',
+    'EPIC': 'epic',
+    'LEGENDARY': 'legendary',
+  };
+  const raritySlug = rarityMap[card.rarity] ?? (card.rarity as string).toLowerCase();
+
   return (
     <motion.div
-      className={clsx('card', `rarity-${card.rarity.toLowerCase()}`, {
+      className={clsx('card', `rarity-${raritySlug}`, className, {
         'playable': isPlayable,
         'selected': isSelected,
       })}
@@ -27,7 +43,7 @@ const Card: React.FC<CardProps> = ({ card, isPlayable, onClick, index = 0, total
       initial={{ rotate: angle, y: yOffset, scale: scaleVal }}
       animate={{ rotate: angle, y: yOffset, scale: scaleVal, zIndex: z }}
       whileHover={{ scale: isSelected ? 1.3 : 1.2, y: isSelected ? -90 : -30, rotate: 0, zIndex: 200 }}
-      onClick={isPlayable ? onClick : undefined}
+      onClick={onClick}
     >
       <div className="card-image">Image</div>
       <div className="card-header">

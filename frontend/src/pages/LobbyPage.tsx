@@ -55,12 +55,12 @@ const LobbyPage: React.FC = () => {
 
   return (
     <div className="lobby-page">
-      <h2>Lobby: {lobby.id}</h2>
-      <button onClick={() => navigator.clipboard.writeText(lobby.id)}>Copy Code</button>
+      <h2>Лобби: {lobby.id}</h2>
+      <button className="copy-code-btn" onClick={() => navigator.clipboard.writeText(lobby.id)}>Скопировать код</button>
       
       <div className="lobby-container">
         <div className="players-list">
-          <h3>Players ({lobby.players.length}/8)</h3>
+          <h3>Игроки ({lobby.players.length}/8)</h3>
           <ul>
             {lobby.players.map(p => (
               <li key={p.id}>
@@ -72,7 +72,7 @@ const LobbyPage: React.FC = () => {
         </div>
         
         <div className="character-selection">
-          <h3>Choose your Character</h3>
+          <h3>Выберите персонажа</h3>
           <div className="character-carousel">
             {ALL_CHARACTERS.map(char => {
               const isTaken = lobby.players.some(p => p.character?.name === char.name);
@@ -94,7 +94,7 @@ const LobbyPage: React.FC = () => {
           <div className="character-details">
             <h3>{selectedCharacter.name}</h3>
             <p><strong>{selectedCharacter.passive_ability_name}</strong>: {selectedCharacter.passive_ability_description}</p>
-            <h4>Unique Cards:</h4>
+            <h4>Уникальные карты:</h4>
             <ul>
               {selectedCharacter.unique_cards.map(card => <li key={card.name}>{card.name}</li>)}
             </ul>
@@ -103,8 +103,8 @@ const LobbyPage: React.FC = () => {
       </div>
 
       {isHost && (
-        <button onClick={handleStartGame} disabled={!allPlayersReady || isStarting}>
-          {isStarting ? 'Starting...' : 'Start Game'}
+        <button className="start-game-btn" onClick={handleStartGame} disabled={!allPlayersReady || isStarting}>
+          {isStarting ? 'Запуск...' : 'Начать игру'}
         </button>
       )}
     </div>

@@ -54,7 +54,7 @@ const HomePage: React.FC = () => {
       <div className="form-container">
         <input
           type="text"
-          placeholder="Enter your nickname"
+          placeholder="Введите ваш ник"
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           maxLength={32}
@@ -63,19 +63,19 @@ const HomePage: React.FC = () => {
         <div className="lobby-actions">
           <div className="create-lobby">
             <button onClick={handleCreateLobby} disabled={isLoading || !nickname}>
-              {isLoading ? 'Creating...' : 'Create Game'}
+              {isLoading ? 'Создание...' : 'Создать игру'}
             </button>
           </div>
           <div className="join-lobby">
             <input
               type="text"
-              placeholder="Enter Lobby Code"
+              placeholder="Код лобби"
               value={lobbyCode}
               onChange={(e) => setLobbyCode(e.target.value.toUpperCase())}
               className="lobby-code-input"
             />
             <button onClick={handleJoinLobby} disabled={isLoading || !nickname || !lobbyCode}>
-              {isLoading ? 'Joining...' : 'Join Game'}
+              {isLoading ? 'Подключение...' : 'Присоединиться'}
             </button>
           </div>
         </div>

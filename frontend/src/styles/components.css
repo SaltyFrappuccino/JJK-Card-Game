@@ -31,8 +31,27 @@
 .card.rarity-epic { border-color: var(--rarity-epic); }
 .card.rarity-legendary { border-color: var(--rarity-legendary); }
 
+/* Static glow for rarities */
+.card.rarity-common { box-shadow: 0 0 6px var(--rarity-common); }
+.card.rarity-uncommon { box-shadow: 0 0 8px var(--rarity-uncommon); }
+.card.rarity-rare { box-shadow: 0 0 10px var(--rarity-rare); }
+.card.rarity-epic { box-shadow: 0 0 12px var(--rarity-epic); }
+
+/* Animated legendary glow */
+@keyframes legendary-glow {
+    0% { box-shadow: 0 0 12px var(--rarity-legendary), 0 0 20px rgba(241, 196, 15, 0.6); }
+    50% { box-shadow: 0 0 20px var(--rarity-legendary), 0 0 30px rgba(241, 196, 15, 1); }
+    100% { box-shadow: 0 0 12px var(--rarity-legendary), 0 0 20px rgba(241, 196, 15, 0.6); }
+}
+
 .card.rarity-legendary {
-    box-shadow: 0 0 15px var(--rarity-legendary);
+    animation: legendary-glow 2s ease-in-out infinite;
+}
+
+/* выделение карт для сброса */
+.card.discard-selected {
+    outline: 3px dashed var(--accent-color-2);
+    outline-offset: -4px;
 }
 
 .card-header { display: flex; justify-content: space-between; align-items: center; }
@@ -60,18 +79,23 @@
 
 .tooltip-content {
     position: absolute;
-    bottom: 125%;
+    bottom: calc(100% + 6px);
     left: 50%;
     transform: translateX(-50%);
     background: var(--panel-color);
     padding: 8px 12px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    white-space: nowrap;
+    white-space: normal;
+    min-width: 220px;
+    max-width: 400px;
+    width: max-content;
+    text-align: left;
+    overflow-wrap: break-word;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease-in-out;
-    z-index: 10;
+    z-index: 999;
 }
 
 .tooltip-container:hover .tooltip-content {

@@ -54,6 +54,7 @@ class Player(BaseModel):
     discard_pile: List[Card] = []
     effects: List[Effect] = []
     status: PlayerStatus = PlayerStatus.ALIVE
+    last_discard_round: int = 0  # раунд, когда игрок последний раз использовал сброс
 
 class Lobby(BaseModel):
     id: str
