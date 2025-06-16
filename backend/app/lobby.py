@@ -4,13 +4,11 @@ from typing import Dict
 from .models import Lobby, Player, Game
 from .exceptions import LobbyNotFound, CharacterAlreadyTaken, PlayerNotFound, CharacterNotFound, LobbyException
 from .content import characters
-from .game import GameManager
+from .game import game_manager
 from .websockets import broadcast
 
 # In-memory storage for lobbies
 lobbies: Dict[str, Lobby] = {}
-
-game_manager = GameManager()
 
 def _generate_lobby_id():
     """Generates a unique 6-digit alphanumeric lobby code."""
@@ -63,6 +61,8 @@ class LobbyManager:
             raise CharacterNotFound(f"Character with name {character_name} not found.")
 
         player.character = character_template
+        player.hp = character_template.max_hp
+        player.energy = character_template.max_energy
         
         await broadcast(lobby_id, {"type": "lobby_update", "payload": lobby.dict()})
         return lobby

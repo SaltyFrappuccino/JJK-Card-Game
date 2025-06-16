@@ -18,6 +18,7 @@ const GamePage: React.FC = () => {
 
   const currentPlayer = useMemo(() => game ? game.players[game.current_turn_player_index] : null, [game]);
   const selfPlayer = useMemo(() => game?.players.find(p => p.id === self?.id), [game, self]);
+  const hasDiscardedThisRound = selfPlayer && game ? selfPlayer.last_discard_round === game.round_number : false;
 
   const handleCardClick = (card: Card) => {
     if (discardMode) {
@@ -148,7 +149,7 @@ const GamePage: React.FC = () => {
           </div>
           {isMyTurn && (
             <div className="discard-controls">
-              {!discardMode && <button onClick={handleToggleDiscardMode}>Сбросить карты</button>}
+              {!discardMode && <button onClick={handleToggleDiscardMode} disabled={hasDiscardedThisRound}>Сбросить карты</button>}
               {discardMode && (
                 <div style={{display:'flex',gap:'8px'}}>
                   <button onClick={handleConfirmDiscard} disabled={discardSelection.length===0}>Сбросить {discardSelection.length}</button>

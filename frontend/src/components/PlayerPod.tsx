@@ -55,19 +55,26 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
       </div>
       {player.block > 0 && <div className="block-indicator">Block: {player.block}</div>}
       <div className="effects">
-        {player.effects.map((effect, index) => (
-          <div key={index} className="effect-icon-container">
-            <img 
-              src={`/effects/${effect.name.replace(/:/g, '')}.png`} 
-              alt={effect.name} 
-              className="effect-icon"
-              data-tooltip-id={`tooltip-${effect.name}`}
-              data-tooltip-content={effectsInfo[effect.name as keyof typeof effectsInfo] || 'Нет описания'}
-              data-tooltip-place="top"
-            />
-            <Tooltip id={`tooltip-${effect.name}`} />
-          </div>
-        ))}
+        {player.effects.map((effect, index) => {
+          const abbreviation = effect.name.split(' ').map(word => word[0]).join('').toUpperCase();
+          const description = effectsInfo[effect.name as keyof typeof effectsInfo] || 'Нет описания';
+          const fullDescription = `${description} (Осталось ходов: ${effect.duration})`;
+          const tooltipId = `tooltip-${player.id}-${effect.name.replace(/[^a-zA-Z0-9]/g, '')}-${index}`;
+
+          return (
+            <div key={index} className="effect-icon-container">
+              <div 
+                className="effect-icon"
+                data-tooltip-id={tooltipId}
+                data-tooltip-content={fullDescription}
+                data-tooltip-place="top"
+              >
+                {abbreviation}
+              </div>
+              <Tooltip id={tooltipId} />
+            </div>
+          );
+        })}
       </div>
       {isSelf && isCurrent && onEndTurn && (
         <button className="end-turn-button" onClick={onEndTurn}>Конец хода</button>

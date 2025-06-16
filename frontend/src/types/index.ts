@@ -39,6 +39,7 @@ export interface Player {
   discard_pile: Card[];
   effects: Effect[];
   status: PlayerStatus;
+  last_discard_round: number;
 }
 
 export interface LobbyInfo {

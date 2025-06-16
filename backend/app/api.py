@@ -2,15 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, Body
 import uuid
 from typing import Annotated
 
-from .lobby import LobbyManager
+from .lobby import lobby_manager, LobbyManager
 from .schemas import PlayerCreate, LobbyInfo, LobbyJoinResponse, CharacterSelectRequest, GameStateInfo, PlayerInfo
 from .exceptions import LobbyException, LobbyNotFound, CharacterAlreadyTaken, PlayerNotFound, CharacterNotFound
 
 router = APIRouter()
-
-# This is a hack for dependency injection of a singleton.
-# For a real app, you might use a more robust solution.
-lobby_manager = LobbyManager()
 
 def get_lobby_manager():
     return lobby_manager

@@ -55,14 +55,14 @@ class GameManager:
     
     def start_game(self, lobby: Lobby) -> Game:
         game = self._create_game_from_lobby(lobby)
-        self.games[game.id] = game
+        self.games[game.game_id] = game
         # The lobby is deleted in the LobbyManager now
         return game
 
     def play_card(self, game_id: str, player_id: str, card_name: str, target_id: str = None, targets_ids: list = None) -> Game:
         game = self.get_game(game_id)
         if not game: raise GameException("Игра не найдена.")
-        if game.current_player_id != player_id: raise GameException("Сейчас не ваш ход.")
+        if game.players[game.current_turn_player_index].id != player_id: raise GameException("Сейчас не ваш ход.")
 
         player = self._find_player(game, player_id)
         if not player: raise GameException("Игрок не найден.")
@@ -111,28 +111,28 @@ class GameManager:
             game = effect_function(game, player, target_id, targets_ids)
 
         self._check_for_defeated_players(game)
-        if game.status != GameState.FINISHED:
+        if game.game_state != GameState.FINISHED:
             self._check_game_over(game)
 
         return game
 
     def end_turn(self, game_id: str, player_id: str) -> Game:
         game = self.get_game(game_id)
-        if not game or game.status == GameState.FINISHED: return game
-        if game.current_player_id != player_id: raise GameException("Сейчас не ваш ход.")
+        if not game or game.game_state == GameState.FINISHED: return game
+        if game.players[game.current_turn_player_index].id != player_id: raise GameException("Сейчас не ваш ход.")
 
         player = self._find_player(game, player_id)
         self._process_passives(game, player)
         self._process_end_of_turn_effects(game, player)
         
-        current_turn_index = game.turn_order.index(player_id)
-        next_turn_index = (current_turn_index + 1) % len(game.turn_order)
+        current_turn_index = game.current_turn_player_index
+        next_turn_index = (current_turn_index + 1) % len(game.players)
         
-        if next_turn_index == 0 and game.turn_order[next_turn_index] == game.round_start_player_id:
+        if next_turn_index == 0:
              self._start_new_round(game)
         
-        game.current_player_id = game.turn_order[next_turn_index]
-        new_current_player = self._find_player(game, game.current_player_id)
+        game.current_turn_player_index = next_turn_index
+        new_current_player = game.players[game.current_turn_player_index]
         self._process_start_of_turn_effects(game, new_current_player)
 
         return game
@@ -141,7 +141,7 @@ class GameManager:
         game = self.get_game(game_id)
         player = self._find_player(game, player_id)
         
-        if player.last_discard_round == game.round:
+        if player.last_discard_round == game.round_number:
             raise GameException("Вы уже сбрасывали карты в этом раунде.")
         if len(card_names) > 2:
             raise GameException("Можно сбросить не более 2 карт.")
@@ -155,14 +155,14 @@ class GameManager:
                 discarded_count += 1
         
         self._draw_cards(player, len(player.hand) + discarded_count)
-        player.last_discard_round = game.round
+        player.last_discard_round = game.round_number
         return game
 
     # --- Private Helper Methods ---
 
     def _start_new_round(self, game: Game):
-        game.round += 1
-        game.game_log.append(f"--- Начинается раунд {game.round} ---")
+        game.round_number += 1
+        game.game_log.append(f"--- Начинается раунд {game.round_number} ---")
         
         for p in game.players:
             if p.status == PlayerStatus.ALIVE:
@@ -176,8 +176,8 @@ class GameManager:
                 p.energy = min(p.character.max_energy, p.energy + int(p.character.max_energy * 0.20))
         
         # Determine turn order for the new round
-        start_index = game.turn_order.index(game.round_start_player_id)
-        game.turn_order = game.turn_order[start_index:] + game.turn_order[:start_index]
+        start_index = game.current_turn_player_index
+        game.current_turn_player_index = (start_index + 1) % len(game.players)
 
 
     def _draw_cards(self, player: Player, max_hand_size: int):
@@ -193,19 +193,17 @@ class GameManager:
         game_id = f"game_{len(self.games) + 1}"
         players = lobby.players
         for player in players:
+            player.energy = 0
             self._build_deck_for_player(player)
             self._draw_cards(player, 6 if player.character.name == "Сатору Годзё" else 5)
         
         random.shuffle(players)
-        turn_order = [p.id for p in players]
         
         game = Game(
-            id=game_id,
+            game_id=game_id,
             players=players,
-            turn_order=turn_order,
-            current_player_id=turn_order[0],
-            round_start_player_id=turn_order[0],
-            status=GameState.IN_GAME,
+            current_turn_player_index=0,
+            game_state=GameState.IN_GAME,
             game_log=[f"Игра {game_id} началась!"]
         )
         return game
@@ -292,7 +290,7 @@ class GameManager:
     def _check_game_over(self, game: Game):
         alive_players = [p for p in game.players if p.status == PlayerStatus.ALIVE]
         if len(alive_players) <= 1:
-            game.status = GameState.FINISHED
+            game.game_state = GameState.FINISHED
             winner = alive_players[0] if alive_players else None
             game.game_log.append("Игра окончена." + (f" Победитель: {winner.nickname}!" if winner else ""))
 
