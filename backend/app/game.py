@@ -111,14 +111,14 @@ class GameManager:
             game = effect_function(game, player, target_id, targets_ids)
 
         self._check_for_defeated_players(game)
-        if game.status != GameStatus.FINISHED:
+        if game.status != GameState.FINISHED:
             self._check_game_over(game)
 
         return game
 
     def end_turn(self, game_id: str, player_id: str) -> Game:
         game = self.get_game(game_id)
-        if not game or game.status == GameStatus.FINISHED: return game
+        if not game or game.status == GameState.FINISHED: return game
         if game.current_player_id != player_id: raise GameException("Сейчас не ваш ход.")
 
         player = self._find_player(game, player_id)
@@ -202,10 +202,11 @@ class GameManager:
         game = Game(
             id=game_id,
             players=players,
-            status=GameStatus.IN_PROGRESS,
-            current_player_id=turn_order[0],
             turn_order=turn_order,
+            current_player_id=turn_order[0],
             round_start_player_id=turn_order[0],
+            status=GameState.IN_PROGRESS,
+            game_log=[f"Игра {game_id} началась!"]
         )
         return game
 
@@ -291,9 +292,9 @@ class GameManager:
     def _check_game_over(self, game: Game):
         alive_players = [p for p in game.players if p.status == PlayerStatus.ALIVE]
         if len(alive_players) <= 1:
-            game.status = GameStatus.FINISHED
+            game.status = GameState.FINISHED
             winner = alive_players[0] if alive_players else None
-            game.game_log.append(f"Игра окончена! Победитель: {winner.nickname if winner else 'Никто'}")
+            game.game_log.append("Игра окончена." + (f" Победитель: {winner.nickname}!" if winner else ""))
 
     # --- Card Effect Functions ---
     def _apply_effect(self, game: Game, source: Player, target: Player, name: str, duration: int, value: Any = None):
