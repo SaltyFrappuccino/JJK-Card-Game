@@ -1,0 +1,52 @@
+.home-page {
+    text-align: center;
+    background-color: var(--panel-color);
+    padding: 40px;
+    border-radius: 15px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 500px;
+}
+
+.home-page h1 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    color: var(--accent-color-1);
+    text-shadow: 0 0 10px var(--accent-color-1);
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.nickname-input {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.lobby-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.create-lobby, .join-lobby {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.join-lobby {
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
+}
+
+.lobby-code-input {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: center;
+} 

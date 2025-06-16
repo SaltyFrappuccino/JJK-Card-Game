@@ -1,0 +1,139 @@
+/* Card Component */
+.card {
+    width: 220px;
+    height: 320px;
+    background-color: #1a1a2e;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: var(--text-color);
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.card.playable {
+    border-width: 3px;
+}
+
+.card.playable.rarity-common { box-shadow: 0 0 15px var(--rarity-common); }
+.card.playable.rarity-uncommon { box-shadow: 0 0 15px var(--rarity-uncommon); }
+.card.playable.rarity-rare { box-shadow: 0 0 15px var(--rarity-rare); }
+.card.playable.rarity-epic { box-shadow: 0 0 15px var(--rarity-epic); }
+.card.playable.rarity-legendary { box-shadow: 0 0 15px var(--rarity-legendary); }
+
+.card.rarity-common { border-color: var(--rarity-common); }
+.card.rarity-uncommon { border-color: var(--rarity-uncommon); }
+.card.rarity-rare { border-color: var(--rarity-rare); }
+.card.rarity-epic { border-color: var(--rarity-epic); }
+.card.rarity-legendary { border-color: var(--rarity-legendary); }
+
+.card.rarity-legendary {
+    box-shadow: 0 0 15px var(--rarity-legendary);
+}
+
+.card-header { display: flex; justify-content: space-between; align-items: center; }
+.card-name { font-weight: bold; }
+.card-cost { font-weight: bold; background: var(--accent-color-2); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+.card-description { font-size: 0.8rem; flex-grow: 1; margin-top: 10px; overflow-y: auto; max-height: 120px; }
+.card-footer { display: flex; justify-content: space-between; font-size: 0.7rem; opacity: 0.7; }
+
+.card-image {
+    width: 100%;
+    height: 110px;
+    background: #333;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-size: 0.8rem;
+}
+
+.tooltip-container {
+    position: relative;
+}
+
+.tooltip-content {
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel-color);
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+    z-index: 10;
+}
+
+.tooltip-container:hover .tooltip-content {
+    opacity: 1;
+}
+
+.info-icon {
+    margin-left: 6px;
+    cursor: pointer;
+}
+
+/* PlayerPod Component */
+.player-pod {
+    width: 220px;
+    padding: 10px;
+    background: var(--panel-color);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.player-pod.self-player {
+    width: 260px;
+}
+
+.player-pod.current-player {
+    border-color: var(--accent-color-1);
+    box-shadow: 0 0 15px var(--accent-color-1);
+}
+
+.player-pod.targetable {
+    cursor: crosshair;
+    border-color: var(--accent-color-2);
+}
+
+.player-pod.defeated {
+    opacity: 0.4;
+    filter: grayscale(1);
+}
+
+.player-info { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; align-items: center; }
+.status-bars { display: flex; flex-direction: column; gap: 5px; margin-bottom: 5px; }
+
+.hp-bar, .energy-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #333;
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+}
+.hp-fill { background-color: #e74c3c; height: 100%; }
+.energy-fill { background-color: #3498db; height: 100%; }
+.hp-text, .energy-text { position: absolute; left: 5px; top: 1px; font-size: 0.8rem; }
+
+.block-indicator { background: #95a5a6; color: #111; padding: 2px 5px; border-radius: 3px; margin-bottom: 5px; text-align: center; }
+.effects { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+.effect-icon { width: 20px; height: 20px; background: #9b59b6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; }
+
+.end-turn-button {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.passive-info { position: relative; } 

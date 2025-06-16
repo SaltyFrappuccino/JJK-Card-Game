@@ -1,0 +1,108 @@
+.game-page {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    display: grid;
+    grid-template-areas:
+        "board board log"
+        "ui ui ui";
+    grid-template-rows: 2fr 1fr;
+    grid-template-columns: 1fr 1fr 300px;
+    overflow: hidden;
+}
+
+.game-board {
+    grid-area: board;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.player-pods-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    /* Basic circular layout - can be improved with JS */
+    flex-wrap: wrap; 
+}
+
+.game-log {
+    grid-area: log;
+    background: var(--panel-color);
+    padding: 10px 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+    border-left: 2px solid var(--border-color);
+}
+
+.game-log h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.game-log-entry {
+    background: rgba(255,255,255,0.05);
+    padding: 6px 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+}
+
+.player-ui {
+    grid-area: ui;
+    background: linear-gradient(to top, rgba(17, 24, 39, 1), rgba(17, 24, 39, 0.7));
+    border-top: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 40px;
+}
+
+.own-player-pod {
+    flex-shrink: 0;
+    margin-right: auto;
+}
+
+.player-hand {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 0;
+    padding-bottom: 60px;
+    flex-grow: 1;
+}
+
+.game-controls {
+    flex-shrink: 0;
+    margin-left: auto;
+    position: relative;
+    z-index: 500;
+    min-width: 200px;
+}
+
+.deck-info {
+    margin-bottom: 15px;
+}
+
+.game-over-screen {
+    text-align: center;
+    background-color: var(--panel-color);
+    padding: 50px;
+    border-radius: 15px;
+}
+
+.turn-indicator {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--panel-color);
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-weight: bold;
+} 
