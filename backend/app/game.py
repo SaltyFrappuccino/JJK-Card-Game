@@ -374,9 +374,14 @@ class GameManager:
         player.deck = deck
 
     def _process_passives(self, game: Game, player: Player):
-        if any(e.name == "sukuna_malevolent_shrine" for e in player.effects):
-            opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
-            for op in opponents: self._deal_damage(game, player, op, 1500, ignores_block=True)
+        # Sukuna's Malevolent Shrine
+        shrine_effect = next((e for e in player.effects if e.name == "sukuna_malevolent_shrine"), None)
+        if shrine_effect:
+            # Check for Simple Domain
+            if not any(e.name == "common_simple_domain" for e in player.effects):
+                source_player = self._find_player(game, shrine_effect.source_player_id)
+                if source_player:
+                    self._deal_damage(game, source_player, player, 1500, ignores_block=True, is_effect_damage=True)
         
         if player.character and player.character.id == "yuta_okkotsu":
             opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
