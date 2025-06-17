@@ -433,7 +433,6 @@ class GameManager:
         
         effects_to_remove = []
         for effect in player.effects:
-            effect.duration -= 1
             if effect.name == EFFECT_ID_BURN: self._deal_damage(game, player, player, effect.value, is_effect_damage=True)
             if effect.name == "jogo_coffin_of_the_iron_mountain": self._deal_damage(game, player, player, 800, is_effect_damage=True)
             if effect.name == EFFECT_ID_DIVERGENT_FIST_DOT: 
@@ -446,15 +445,19 @@ class GameManager:
                 player.energy = min(player.character.max_energy, player.energy + recovery)
                 game.game_log.append(f"{player.nickname} восстанавливает {recovery} ПЭ от эффекта 'Зона'.")
 
+    def _process_end_of_turn_effects(self, game: Game, player: Player):
+        effects_to_remove = []
+        for effect in player.effects:
+            effect.duration -= 1
             if effect.duration <= 0:
                 effects_to_remove.append(effect)
 
         for effect in effects_to_remove:
+            effect_card = next((c for c in common_cards + player.character.unique_cards if c.id == effect.name), None)
+            effect_name_for_log = effect_card.name if effect_card else effect.name
+            game.game_log.append(f"Эффект '{effect_name_for_log}' на {player.nickname} закончился.")
             player.effects.remove(effect)
             if effect.name == "itadori_unwavering_will": self._defeat_player(game, player)
-
-    def _process_end_of_turn_effects(self, game: Game, player: Player):
-        pass # Placeholder for now
 
     def _deal_damage(self, game: Game, source_player: Player, target: Player, damage: int, ignores_block: bool = False, card: Card = None, card_type: CardType = None, is_effect_damage: bool = False):
         if target.status == PlayerStatus.DEFEATED:
@@ -500,7 +503,7 @@ class GameManager:
                 self._apply_effect(game, source_player, target, EFFECT_ID_BURN, 2, value=100)
 
         actual_damage = final_damage
-        if source_player.chant_active_for_turn:
+        if source_player and source_player.chant_active_for_turn:
             actual_damage = int(actual_damage * 1.5)
 
         if any(e.name == "common_falling_blossom_emotion" for e in target.effects):
@@ -543,10 +546,21 @@ class GameManager:
 
     # --- Card Effect Functions ---
     def _apply_effect(self, game: Game, source: Player, target: Player, name: str, duration: int, value: Any = None, target_id: str = None):
-        target.effects.append(Effect(name=name, duration=duration, value=value, source_player_id=source.id, target_id=target_id))
+        # The duration should account for the current turn, so we add 1
+        # An effect for "1 turn" should last until the end of the target's next turn.
+        # It's applied, player ends turn. Target starts turn (duration ticks to 1). Target ends turn (duration ticks to 0).
+        actual_duration = duration + 1
+        target.effects.append(Effect(name=name, duration=actual_duration, value=value, source_player_id=source.id, target_id=target_id))
+        
         effect_card = next((c for c in common_cards + source.character.unique_cards if c.id == name), None)
-        effect_name_for_log = effect_card.name if effect_card else name
-        game.game_log.append(f"{target.nickname} получает эффект '{effect_name_for_log}' на {duration} раунда.")
+        if not effect_card:
+             # Try finding in other characters' cards if it's a special effect like a counter
+            all_unique_cards = [card for char in characters for card in char.unique_cards]
+            effect_card = next((c for c in all_unique_cards if c.id == name), None)
+
+        effect_name_for_log = effect_card.name if effect_card else name.replace("_", " ").title()
+        
+        game.game_log.append(f"{target.nickname} получает эффект '{effect_name_for_log}' на {duration} хода.")
 
     def _effect_udar(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
@@ -1017,7 +1031,7 @@ class GameManager:
         target = self._find_player(game, target_id)
         if not target: return game
         self._deal_damage(game, player, target, 600, card_type=CardType.TECHNIQUE)
-        self._apply_effect(game, player, target, "manji_kick_counter", 2) # Lasts for 1 round
+        self._apply_effect(game, player, target, "manji_kick_counter", 1) # Lasts for 1 of target's turns
         return game
 
     def _effect_polymorphic_soul_isomer(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
