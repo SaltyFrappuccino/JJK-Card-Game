@@ -185,16 +185,24 @@ class GameManager:
         current_turn_index = game.current_turn_player_index
         next_turn_index = (current_turn_index + 1) % len(game.players)
 
+        # Skip defeated players
+        while game.players[next_turn_index].status == PlayerStatus.DEFEATED:
+            if next_turn_index == current_turn_index:
+                # All other players are defeated, end the game
+                self._check_game_over(game)
+                return game
+            next_turn_index = (next_turn_index + 1) % len(game.players)
+
         # Skip turns for dummies
         if game.is_training:
             while "dummy" in game.players[next_turn_index].id:
-                if next_turn_index == game.current_turn_player_index:
+                if next_turn_index == current_turn_index:
                     # This should not happen, but as a safeguard
                     break
                 next_turn_index = (next_turn_index + 1) % len(game.players)
 
         # Check if a full round has passed
-        if next_turn_index <= game.current_turn_player_index:
+        if next_turn_index <= current_turn_index:
              self._start_new_round(game)
         
         game.current_turn_player_index = next_turn_index
@@ -570,7 +578,11 @@ class GameManager:
         return game
 
     def _effect_obratnaia_proklaiataia_tekhnika(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        player.hp = min(player.character.max_hp, player.hp + 1200)
+        if player.character:
+            heal_percent = random.randint(5, 15) / 100
+            heal_amount = int(player.character.max_hp * heal_percent)
+            player.hp = min(player.character.max_hp, player.hp + heal_amount)
+            game.game_log.append(f"{player.nickname} восстанавливает {heal_amount} ХП.")
         return game
 
     def _effect_chernaia_vspyshka(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:

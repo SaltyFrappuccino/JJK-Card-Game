@@ -57,7 +57,7 @@ common_cards = [
         type=CardType.TECHNIQUE,
         rarity=Rarity.EPIC,
         cost=10000,
-        description="Восстанавливает 1200 здоровья."
+        description="Восстанавливает от 5% до 15% от вашего максимального запаса здоровья."
     ),
     Card(
         id="common_black_flash",

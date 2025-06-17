@@ -134,9 +134,9 @@ const GamePage: React.FC = () => {
     const winner = game.players.find(p => p.status === 'ALIVE');
     return (
       <div className="game-over-screen">
-        <h1>Game Over</h1>
-        <h2>{winner ? `${winner.nickname} is the winner!` : 'It\'s a draw!'}</h2>
-        <button onClick={handleReturnToMenu}>Return to Main Menu</button>
+        <h1>Игра окончена</h1>
+        <h2>{winner ? `${winner.nickname} — победитель!` : 'Ничья!'}</h2>
+        <button onClick={handleReturnToMenu}>Вернуться в главное меню</button>
       </div>
     );
   }
