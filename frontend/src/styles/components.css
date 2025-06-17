@@ -27,14 +27,16 @@
 
 .card.rarity-common { border-color: var(--rarity-common); }
 .card.rarity-uncommon { border-color: var(--rarity-uncommon); }
-.card.rarity-rare { border-color: var(--rarity-rare); }
+.card.rarity-rare { 
+    border-color: var(--rarity-rare); 
+    box-shadow: 0 0 10px var(--rarity-rare);
+}
 .card.rarity-epic { border-color: var(--rarity-epic); }
 .card.rarity-legendary { border-color: var(--rarity-legendary); }
 
 /* Static glow for rarities */
 .card.rarity-common { box-shadow: 0 0 6px var(--rarity-common); }
 .card.rarity-uncommon { box-shadow: 0 0 8px var(--rarity-uncommon); }
-.card.rarity-rare { box-shadow: 0 0 10px var(--rarity-rare); }
 .card.rarity-epic { box-shadow: 0 0 12px var(--rarity-epic); }
 
 /* Animated legendary glow */
