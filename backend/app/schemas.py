@@ -30,7 +30,7 @@ class LobbyJoinResponse(BaseModel):
 
 class CharacterSelectRequest(BaseModel):
     player_id: str
-    character_name: str
+    character_id: str
 
 # --- Schemas for Game State ---
 

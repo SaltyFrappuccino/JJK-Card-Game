@@ -38,10 +38,10 @@ export const useWS = () => {
     }
   };
 
-  const emitPlayCard = (cardName: string, targetId?: string, targetsIds?: string[]) => {
+  const emitPlayCard = (cardId: string, targetId?: string, targetsIds?: string[]) => {
     const gameId = game?.game_id;
     if (gameId) {
-      send('play_card', { game_id: gameId, card_name: cardName, target_id: targetId, targets_ids: targetsIds });
+      send('play_card', { game_id: gameId, card_id: cardId, target_id: targetId, targets_ids: targetsIds });
     }
   };
 
@@ -52,10 +52,10 @@ export const useWS = () => {
     }
   };
 
-  const emitDiscardCards = (cardNames: string[]) => {
+  const emitDiscardCards = (cardIds: string[]) => {
     const gameId = game?.game_id;
     if (gameId) {
-      send('discard_cards', { game_id: gameId, card_names: cardNames });
+      send('discard_cards', { game_id: gameId, card_ids: cardIds });
     }
   };
 

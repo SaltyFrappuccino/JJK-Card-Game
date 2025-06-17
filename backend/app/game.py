@@ -5,6 +5,12 @@ from .models import Game, Lobby, Player, Card, GameState, Effect, PlayerStatus, 
 from .content import common_cards, characters
 from .exceptions import GameException
 
+# Effect IDs
+EFFECT_ID_SOUL_DISTORTION = "mahito_self_embodiment_of_perfection" # Махито РТ дебафф
+EFFECT_ID_UNLIMITED_VOID = "gojo_unlimited_void" # Годзё РТ дебафф
+EFFECT_ID_DIVERGENT_FIST_DOT = "itadori_divergent_fist_dot"
+EFFECT_ID_BURN = "jogo_burn"
+EFFECT_ID_FREE_STRIKE = "free_strike_effect"
 
 class GameManager:
     def __init__(self):
@@ -35,17 +41,17 @@ class GameManager:
         lobby.players.append(Player(id=player_id, nickname=nickname))
         return lobby
 
-    def select_character(self, lobby_id: str, player_id: str, character_name: str) -> Lobby:
+    def select_character(self, lobby_id: str, player_id: str, character_id: str) -> Lobby:
         lobby = self.get_lobby(lobby_id)
         if not lobby: raise GameException("Лобби не найдено.")
         
         player = self._find_player_in_lobby(lobby, player_id)
         if not player: raise GameException("Игрок не найден.")
 
-        if any(p.character and p.character.name == character_name for p in lobby.players):
+        if any(p.character and p.character.id == character_id for p in lobby.players):
             raise GameException("Этот персонаж уже выбран.")
 
-        character = next((c for c in characters if c.name == character_name), None)
+        character = next((c for c in characters if c.id == character_id), None)
         if not character: raise GameException("Персонаж не найден.")
 
         player.character = character
@@ -59,7 +65,7 @@ class GameManager:
         # The lobby is deleted in the LobbyManager now
         return game
 
-    def play_card(self, game_id: str, player_id: str, card_name: str, target_id: str = None, targets_ids: list = None) -> Game:
+    def play_card(self, game_id: str, player_id: str, card_id: str, target_id: str = None, targets_ids: list = None) -> Game:
         game = self.get_game(game_id)
         if not game: raise GameException("Игра не найдена.")
         if game.players[game.current_turn_player_index].id != player_id: raise GameException("Сейчас не ваш ход.")
@@ -67,23 +73,23 @@ class GameManager:
         player = self._find_player(game, player_id)
         if not player: raise GameException("Игрок не найден.")
 
-        card_to_play = next((card for card in player.hand if card.name == card_name), None)
+        card_to_play = next((card for card in player.hand if card.id == card_id), None)
         if not card_to_play: raise GameException("Карта не найдена в руке.")
 
-        is_free_udar = card_to_play.name == "Удар" and any(e.name == "Бесплатный Удар" for e in player.effects)
+        is_free_udar = card_to_play.id == "common_strike" and any(e.name == EFFECT_ID_FREE_STRIKE for e in player.effects)
         
         player.chant_active_for_turn = False
-        chant_effect = next((e for e in player.effects if e.name == "Песнопение (Чант)"), None)
+        chant_effect = next((e for e in player.effects if e.name == "common_chant"), None)
         if chant_effect and card_to_play.type == CardType.TECHNIQUE:
             player.chant_active_for_turn = True
 
         card_cost = card_to_play.cost
         # Apply Gojo's discount
-        if player.character and player.character.name == "Сатору Годзё":
+        if player.character and player.character.id == "gojo_satoru":
             card_cost = int(card_cost * player.cost_modifier)
         
         # Apply Yuta's domain discount
-        if card_to_play.is_copied and any(e.name == "Истинная и Взаимная Любовь" for e in player.effects):
+        if card_to_play.is_copied and any(e.name == "yuta_true_mutual_love" for e in player.effects):
             card_cost = -(-card_cost // 4) # Ceiling division
 
         if not game.is_training:
@@ -91,23 +97,23 @@ class GameManager:
                 raise GameException("Недостаточно Проклятой Энергии.")
 
         # --- Conditional Cards ---
-        if card_to_play.name == "Мнимая техника: \"Фиолетовый\"":
+        if card_to_play.id == "gojo_purple":
             if not player.used_blue or not player.used_red:
                 raise GameException("Нужно сначала использовать 'Синий' и 'Красный'.")
         
-        if card_to_play.name == "Искажённое Тело Изорённых Убийств":
+        if card_to_play.id == "mahito_true_form":
             if player.ignore_block_attacks_count < 5:
                 raise GameException(f"Нужно атаковать картами, игнорирующими блок, ещё {5 - player.ignore_block_attacks_count} раз.")
 
         # --- Domain Expansion Effects ---
-        if any(e.name == "Информационная перегрузка" for e in player.effects):
+        if any(e.name == EFFECT_ID_UNLIMITED_VOID for e in player.effects):
             if card_to_play.type == CardType.TECHNIQUE or card_to_play.rarity in [Rarity.EPIC, Rarity.LEGENDARY]:
                 raise GameException("Вы не можете использовать эту карту из-за 'Информационной перегрузки'.")
 
         if not is_free_udar:
             player.energy -= card_cost
         else:
-            effect = next((e for e in player.effects if e.name == "Бесплатный Удар"), None)
+            effect = next((e for e in player.effects if e.name == EFFECT_ID_FREE_STRIKE), None)
             if effect: player.effects.remove(effect)
 
         player.hand.remove(card_to_play)
@@ -118,14 +124,14 @@ class GameManager:
 
         if targets_ids:
             target_names = [self._find_player(game, tid).nickname for tid in targets_ids if self._find_player(game, tid)]
-            game.game_log.append(f"{player.nickname} играет {card_name} на {', '.join(target_names)}")
+            game.game_log.append(f"{player.nickname} играет {card_to_play.name} на {', '.join(target_names)}")
         elif target_id:
             target = self._find_player(game, target_id)
-            game.game_log.append(f"{player.nickname} играет {card_name} на {target.nickname}")
+            game.game_log.append(f"{player.nickname} играет {card_to_play.name} на {target.nickname}")
         else:
-            game.game_log.append(f"{player.nickname} играет {card_name}")
+            game.game_log.append(f"{player.nickname} играет {card_to_play.name}")
         
-        effect_function = self._get_effect_function(card_name)
+        effect_function = self._get_effect_function(card_id)
         if effect_function:
             game = effect_function(game, player, target_id, targets_ids)
 
@@ -169,18 +175,18 @@ class GameManager:
 
         return game
 
-    def discard_cards(self, game_id: str, player_id: str, card_names: List[str]) -> Game:
+    def discard_cards(self, game_id: str, player_id: str, card_ids: List[str]) -> Game:
         game = self.get_game(game_id)
         player = self._find_player(game, player_id)
         
         if player.last_discard_round == game.round_number:
             raise GameException("Вы уже сбрасывали карты в этом раунде.")
-        if len(card_names) > 2:
+        if len(card_ids) > 2:
             raise GameException("Можно сбросить не более 2 карт.")
 
         discarded_count = 0
-        for name in card_names:
-            card = next((c for c in player.hand if c.name == name), None)
+        for cid in card_ids:
+            card = next((c for c in player.hand if c.id == cid), None)
             if card:
                 player.hand.remove(card)
                 player.discard_pile.append(card)
@@ -199,7 +205,7 @@ class GameManager:
         for p in game.players:
             if p.status == PlayerStatus.ALIVE:
                 # Gojo's cost reduction
-                if p.character and p.character.name == "Сатору Годзё":
+                if p.character and p.character.id == "gojo_satoru":
                     p.cost_modifier = max(0.10, p.cost_modifier - 0.05)
 
                 if game.is_training and "dummy" in p.id:
@@ -208,9 +214,9 @@ class GameManager:
                 
                 p.block = 0
                 max_hand = 5
-                if p.character and p.character.name == "Сатору Годзё": max_hand = 6
-                if any(e.name == "Искажение души" for e in p.effects): max_hand -= 1
-                if any(e.name == "Истинная и Взаимная Любовь" for e in p.effects): max_hand = 8
+                if p.character and p.character.id == "gojo_satoru": max_hand = 6
+                if any(e.name == EFFECT_ID_SOUL_DISTORTION for e in p.effects): max_hand -= 1
+                if any(e.name == "yuta_true_mutual_love" for e in p.effects): max_hand = 8
                 
                 self._draw_cards(p, max_hand)
                 if p.character:
@@ -288,7 +294,7 @@ class GameManager:
                 else:
                     player.energy = 0
                 self._build_deck_for_player(player)
-                self._draw_cards(player, 6 if player.character and player.character.name == "Сатору Годзё" else 5)
+                self._draw_cards(player, 6 if player.character and player.character.id == "gojo_satoru" else 5)
         
         # In training, the real player should always be first.
         if lobby.is_training:
@@ -324,15 +330,15 @@ class GameManager:
         player.deck = deck
 
     def _process_passives(self, game: Game, player: Player):
-        if any(e.name == "Злобное Святилище" for e in player.effects):
+        if any(e.name == "sukuna_malevolent_shrine" for e in player.effects):
             opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
             for op in opponents: self._deal_damage(game, player, op, 1500, ignores_block=True)
         
-        if player.character and player.character.name == "Юта Оккоцу":
+        if player.character and player.character.id == "yuta_okkotsu":
             opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
             if opponents:
                 # Check for "Проявление: Рика" effect
-                rika_manifested = any(e.name == "Проявление: Рика" for e in player.effects)
+                rika_manifested = any(e.name == "yuta_rika_manifestation" for e in player.effects)
                 if rika_manifested:
                     left_player = self._get_left_player(game, self._get_player_index(game, player.id))
                     right_player = self._get_right_player(game, self._get_player_index(game, player.id))
@@ -344,14 +350,14 @@ class GameManager:
                     target = random.choice(opponents)
                     self._deal_damage(game, player, target, 250)
         
-        if any(e.name == "Искажённое Тело Изорённых Убийств" for e in player.effects):
+        if any(e.name == "mahito_true_form" for e in player.effects):
             player.block += 500
 
     def _process_start_of_turn_effects(self, game: Game, player: Player):
         effects_to_remove = []
 
         # Process Mahito's Domain effect first
-        if any(e.name == "Искажение души" for e in player.effects):
+        if any(e.name == EFFECT_ID_SOUL_DISTORTION for e in player.effects):
             player.block = 0 # Annihilate block
             if len(player.hand) >= 1:
                 cards_to_discard = random.sample(player.hand, k=1)
@@ -362,58 +368,67 @@ class GameManager:
 
         for effect in player.effects:
             effect.duration -= 1
+            if effect.name == EFFECT_ID_BURN: self._deal_damage(game, player, player, effect.value, is_effect_damage=True)
+            if effect.name == "jogo_coffin_of_the_iron_mountain": self._deal_damage(game, player, player, 800, is_effect_damage=True)
+            if effect.name == EFFECT_ID_DIVERGENT_FIST_DOT: 
+                source_player = self._find_player(game, effect.source_player_id)
+                if source_player:
+                    self._deal_damage(game, source_player, player, 200, is_effect_damage=True)
+
             if effect.duration <= 0:
                 effects_to_remove.append(effect)
-            
-            if effect.name == "Горение": self._deal_damage(game, player, player, effect.value)
-            if effect.name == "Гроб Стальной Горы": self._deal_damage(game, player, player, 800)
-            if effect.name == "Кулак Дивергента": self._deal_damage(game, self._find_player(game, effect.source_player_id), player, 200)
 
         for effect in effects_to_remove:
             player.effects.remove(effect)
-            if effect.name == "Последний Бой": self._defeat_player(game, player)
+            if effect.name == "itadori_unwavering_will": self._defeat_player(game, player)
 
     def _process_end_of_turn_effects(self, game: Game, player: Player):
         pass # Placeholder for now
 
-    def _deal_damage(self, game: Game, source_player: Player, target: Player, damage: int, ignores_block: bool = False, card: Card = None, card_type: CardType = None):
+    def _deal_damage(self, game: Game, source_player: Player, target: Player, damage: int, ignores_block: bool = False, card: Card = None, card_type: CardType = None, is_effect_damage: bool = False):
         if target.status == PlayerStatus.DEFEATED: return
 
         # Gojo's Neutral Infinity
-        neutral_infinity = next((e for e in target.effects if e.name == "Техника Бесконечности: Нейтраль"), None)
+        neutral_infinity = next((e for e in target.effects if e.name == "gojo_infinity"), None)
         if neutral_infinity and neutral_infinity.source_player_id == target.id and neutral_infinity.target_id == source_player.id:
              game.game_log.append(f"Атака {source_player.nickname} на {target.nickname} отменена Бесконечностью!")
              return
-
-        # Yuta Passive (Copy)
-        if target.character and target.character.name == "Юта Оккоцу" and card_type == CardType.TECHNIQUE and source_player.id != target.id:
-            copied_card = card.copy(deep=True)
-            copied_card.cost = -(-copied_card.cost * 1.25 // 1) # Ceiling
-            copied_card.is_copied = True
-            target.discard_pile.append(copied_card)
-            game.game_log.append(f"Рика скопировала {card.name} для {target.nickname}!")
-
-        # Sukuna Passive (Energy)
-        if target.character and target.character.name == "Рёмен Сукуна" and \
-           source_player.max_hp and source_player.hp and target.max_hp and target.hp and \
-           (source_player.hp / source_player.max_hp) > (target.hp / target.max_hp):
-             restore_amount = int(target.character.max_energy * 0.05)
-             target.energy = min(target.character.max_energy, target.energy + restore_amount)
-             game.game_log.append(f"Жажда Развлечений дарует {target.nickname} {restore_amount} ПЭ!")
         
-        # Jogo Passive (Burn)
-        if source_player.character and source_player.character.name == "Дзёго" and card_type == CardType.TECHNIQUE:
-            self._apply_effect(game, source_player, target, "Горение", 2, value=100)
+        if not is_effect_damage:
+            # Yuta Passive (Copy)
+            if target.character and target.character.id == "yuta_okkotsu" and card_type == CardType.TECHNIQUE and source_player.id != target.id:
+                copied_card = card.copy(deep=True)
+                copied_card.cost = -(-copied_card.cost * 1.25 // 1) # Ceiling
+                copied_card.is_copied = True
+                target.discard_pile.append(copied_card)
+                game.game_log.append(f"Рика скопировала {card.name} для {target.nickname}!")
+
+            # Sukuna Passive (Energy)
+            if target.character and target.character.id == "sukuna_ryomen" and \
+               source_player.character and source_player.hp and target.character and target.hp and \
+               (source_player.hp / source_player.max_hp) > (target.hp / target.max_hp):
+                 restore_amount = int(target.character.max_energy * 0.05)
+                 target.energy = min(target.character.max_energy, target.energy + restore_amount)
+                 game.game_log.append(f"Жажда Развлечений дарует {target.nickname} {restore_amount} ПЭ!")
+            
+            # Jogo Passive (Burn)
+            if source_player.character and source_player.character.id == "jogo" and card_type == CardType.TECHNIQUE:
+                existing_burn = next((e for e in target.effects if e.name == EFFECT_ID_BURN), None)
+                if existing_burn:
+                    existing_burn.duration = 2
+                    game.game_log.append(f"Эффект 'Горение' на {target.nickname} обновлён.")
+                else:
+                    self._apply_effect(game, source_player, target, EFFECT_ID_BURN, 2, value=100)
 
         actual_damage = damage
         if source_player.chant_active_for_turn:
             actual_damage = int(actual_damage * 1.5)
 
-        if any(e.name == "Чувства Опадающего Цветка" for e in target.effects):
+        if any(e.name == "common_falling_blossom_emotion" for e in target.effects):
             actual_damage = int(actual_damage * 0.67) # Reduce damage by 33%
 
         # Mahito's "True Body" damage reduction
-        if any(e.name == "Искажённое Тело Изорённых Убийств" for e in target.effects) and card and card.name == "Удар":
+        if any(e.name == "mahito_true_form" for e in target.effects) and card and card.id == "common_strike":
             actual_damage = int(actual_damage * 0.5)
 
         if not ignores_block:
@@ -427,7 +442,7 @@ class GameManager:
         target.hp -= actual_damage
         game.game_log.append(f"{source_player.nickname} наносит {actual_damage} урона {target.nickname}.")
 
-        if target.hp <= 0 and not any(e.name == "Последний Бой" for e in target.effects):
+        if target.hp <= 0 and not any(e.name == "itadori_unwavering_will" for e in target.effects):
             self._defeat_player(game, target)
 
     def _defeat_player(self, game: Game, player: Player):
@@ -437,7 +452,7 @@ class GameManager:
 
     def _check_for_defeated_players(self, game: Game):
         for p in game.players:
-            if p.hp <= 0 and p.status == PlayerStatus.ALIVE and not any(e.name == "Последний Бой" for e in p.effects):
+            if p.hp <= 0 and p.status == PlayerStatus.ALIVE and not any(e.name == "itadori_unwavering_will" for e in p.effects):
                 self._defeat_player(game, p)
 
     def _check_game_over(self, game: Game):
@@ -448,25 +463,28 @@ class GameManager:
             game.game_log.append("Игра окончена." + (f" Победитель: {winner.nickname}!" if winner else ""))
 
     # --- Card Effect Functions ---
-    def _apply_effect(self, game: Game, source: Player, target: Player, name: str, duration: int, value: Any = None):
-        target.effects.append(Effect(name=name, duration=duration, value=value, source_player_id=source.id))
-        game.game_log.append(f"{target.nickname} получает эффект '{name}' на {duration} раунда.")
+    def _apply_effect(self, game: Game, source: Player, target: Player, name: str, duration: int, value: Any = None, target_id: str = None):
+        target.effects.append(Effect(name=name, duration=duration, value=value, source_player_id=source.id, target_id=target_id))
+        effect_card = next((c for c in common_cards + source.character.unique_cards if c.id == name), None)
+        effect_name_for_log = effect_card.name if effect_card else name
+        game.game_log.append(f"{target.nickname} получает эффект '{effect_name_for_log}' на {duration} раунда.")
 
     def _effect_udar(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
         
         damage = 300
-        if player.character and player.character.name == "Юдзи Итадори": 
+        if player.character and player.character.id == "itadori_yuji": 
             damage += 150
             player.energy = min(player.character.max_energy, player.energy + 1000)
-        if any(e.name == "Искажённое Тело Изорённых Убийств" for e in player.effects): damage *= 3
+        if any(e.name == "mahito_true_form" for e in player.effects): damage *= 3
         
         final_damage = damage
-        if target.character and target.character.name == "Махито": final_damage = 0
-        if any(e.name == "Искажённое Тело Изорённых Убийств" for e in target.effects): final_damage = int(damage * 0.5)
+        if target.character and target.character.id == "mahito": final_damage = 0
+        if any(e.name == "mahito_true_form" for e in target.effects): final_damage = int(damage * 0.5)
 
-        self._deal_damage(game, player, target, final_damage)
+        card = next(c for c in common_cards if c.id == 'common_strike')
+        self._deal_damage(game, player, target, final_damage, card=card, card_type=card.type)
         return game
 
     def _effect_zashchita(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -482,15 +500,15 @@ class GameManager:
         return game
 
     def _effect_pesnopenie(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_effect(game, player, player, "Песнопение (Чант)", 1)
+        self._apply_effect(game, player, player, "common_chant", 1)
         return game
     
     def _effect_prostaia_territoriia(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_effect(game, player, player, "Простая Территория", 2)
+        self._apply_effect(game, player, player, "common_simple_domain", 2)
         return game
 
     def _effect_chuvstva_opadaiushchego_tsvetka(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_effect(game, player, player, "Чувства Опадающего Цветка", 3)
+        self._apply_effect(game, player, player, "common_falling_blossom_emotion", 3)
         return game
 
     def _effect_obratnaia_proklaiataia_tekhnika(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -501,51 +519,57 @@ class GameManager:
         target = self._find_player(game, target_id)
         if not target: return game
         
-        guaranteed = any(e.name == "Глубокая Концентрация" for e in player.effects)
-        chance = 2 if player.character.name == "Юдзи Итадори" else 1
+        guaranteed = any(e.name == "itadori_deep_concentration" for e in player.effects)
+        chance = 2 if player.character.id == "itadori_yuji" else 1
         
+        card = next(c for c in common_cards if c.id == 'common_black_flash')
+
         if guaranteed or random.randint(1, 6) <= chance:
-            self._deal_damage(game, player, target, 3500)
+            self._deal_damage(game, player, target, 3500, card=card, card_type=card.type)
             player.successful_black_flash = True
             if guaranteed:
-                effect = next(e for e in player.effects if e.name == "Глубокая Концентрация")
+                effect = next(e for e in player.effects if e.name == "itadori_deep_concentration")
                 player.effects.remove(effect)
         else:
-            self._deal_damage(game, player, target, 300)
+            self._deal_damage(game, player, target, 300, card=card, card_type=card.type)
         return game
 
     def _effect_usilennyi_udar(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        self._deal_damage(game, player, target, 300, ignores_block=True)
+        card = next(c for c in player.character.unique_cards if c.id == 'gojo_strengthened_strike')
+        self._deal_damage(game, player, target, 300, ignores_block=True, card=card, card_type=card.type)
         return game
 
     def _effect_neitral(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        self._apply_effect(game, player, player, "Техника Бесконечности: Нейтраль", 1, target_id=target.id)
+        self._apply_effect(game, player, player, "gojo_infinity", 1, target_id=target.id)
         return game
 
     def _effect_sinii(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
         targets = random.sample(opponents, k=min(len(opponents), 2))
-        for t in targets: self._deal_damage(game, player, t, 1000)
+        card = next(c for c in player.character.unique_cards if c.id == 'gojo_blue')
+        for t in targets: self._deal_damage(game, player, t, 1000, card=card, card_type=card.type)
         player.used_blue = True
         return game
 
     def _effect_krasnyi(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        self._deal_damage(game, player, target, 1200)
+        card = next(c for c in player.character.unique_cards if c.id == 'gojo_red')
+        self._deal_damage(game, player, target, 1200, card=card, card_type=card.type)
         right_player = self._get_right_player(game, self._get_player_index(game, target.id))
-        if right_player: self._deal_damage(game, player, right_player, 600)
+        if right_player: self._deal_damage(game, player, right_player, 600, card=card, card_type=card.type)
         player.used_red = True
         return game
 
     def _effect_fioletovyi(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        self._deal_damage(game, player, target, 4000, ignores_block=True)
+        card = next(c for c in player.character.unique_cards if c.id == 'gojo_purple')
+        self._deal_damage(game, player, target, 4000, ignores_block=True, card=card, card_type=card.type)
         return game
     
     def _effect_fioletovyi_yadernyi(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -554,56 +578,61 @@ class GameManager:
         return game
 
     def _effect_neobiatnaia_bezdna(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_domain_to_opponents(game, player, "Информационная перегрузка", 3)
+        self._apply_domain_to_opponents(game, player, EFFECT_ID_UNLIMITED_VOID, 3)
         return game
 
     def _effect_razrez(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        self._deal_damage(game, player, target, 600)
+        card = next(c for c in player.character.unique_cards if c.id == 'sukuna_cleave')
+        self._deal_damage(game, player, target, 600, card=card, card_type=card.type)
         left_player = self._get_left_player(game, self._get_player_index(game, target.id))
-        if left_player: self._deal_damage(game, player, left_player, 300)
+        if left_player: self._deal_damage(game, player, left_player, 300, card=card, card_type=card.type)
         return game
         
     def _effect_rasshcheplenie(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        self._deal_damage(game, player, target, 1600)
+        card = next(c for c in player.character.unique_cards if c.id == 'sukuna_dismantle')
+        self._deal_damage(game, player, target, 1600, card=card, card_type=card.type)
         return game
 
     def _effect_rasshcheplenie_pautina(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        self._deal_damage(game, player, target, 1000)
+        card = next(c for c in player.character.unique_cards if c.id == 'sukuna_spiderweb')
+        self._deal_damage(game, player, target, 1000, card=card, card_type=card.type)
         left = self._get_left_player(game, self._get_player_index(game, target.id))
         right = self._get_right_player(game, self._get_player_index(game, target.id))
-        if left: self._deal_damage(game, player, left, 500)
-        if right: self._deal_damage(game, player, right, 500)
+        if left: self._deal_damage(game, player, left, 500, card=card, card_type=card.type)
+        if right: self._deal_damage(game, player, right, 500, card=card, card_type=card.type)
         return game
 
     def _effect_kamino(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
+        card = next(c for c in player.character.unique_cards if c.id == 'sukuna_kamino')
         # Synergy with Domain
-        if any(e.name == "Злобное Святилище" for e in player.effects):
+        if any(e.name == "sukuna_malevolent_shrine" for e in player.effects):
             opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
-            for op in opponents: self._deal_damage(game, player, op, 1200)
+            for op in opponents: self._deal_damage(game, player, op, 1200, card=card, card_type=card.type)
             return game
 
         target = self._find_player(game, target_id)
         if not target: return game
         initial_hp = target.hp
-        self._deal_damage(game, player, target, 1800)
+        self._deal_damage(game, player, target, 1800, card=card, card_type=card.type)
         if target.hp <= 0 and initial_hp > 0:
             player.energy = min(player.character.max_energy, player.energy + 10000)
         return game
 
     def _effect_zlobnoe_sviatilishche(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_effect(game, player, player, "Злобное Святилище", 3)
+        self._apply_effect(game, player, player, "sukuna_malevolent_shrine", 3)
         return game
 
     def _effect_kasanie_dushi(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        self._deal_damage(game, player, target, 250, ignores_block=True)
+        card = next(c for c in player.character.unique_cards if c.id == 'mahito_soul_touch')
+        self._deal_damage(game, player, target, 250, ignores_block=True, card=card, card_type=card.type)
         return game
 
     def _effect_iskazhenie_dushi(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -620,120 +649,147 @@ class GameManager:
         if not target: return game
         damage = 1400
         if target.block > 0: damage = int(damage * 1.5)
-        self._deal_damage(game, player, target, damage)
+        card = next(c for c in player.character.unique_cards if c.id == 'mahito_body_repel')
+        self._deal_damage(game, player, target, damage, card=card, card_type=card.type)
         return game
 
     def _effect_istinnoe_telo(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_effect(game, player, player, "Искажённое Тело Изорённых Убийств", 999)
+        self._apply_effect(game, player, player, "mahito_true_form", 999)
         return game
 
     def _effect_samovoploshchenie_sovershenstva(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_domain_to_opponents(game, player, "Искажение души", 3)
+        self._apply_domain_to_opponents(game, player, EFFECT_ID_SOUL_DISTORTION, 3)
         return game
     
     def _effect_kulak_divergenta(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        self._deal_damage(game, player, target, 400)
-        self._apply_effect(game, player, target, "Кулак Дивергента", 1)
+        card = next(c for c in player.character.unique_cards if c.id == 'itadori_divergent_fist')
+        self._deal_damage(game, player, target, 400, card=card, card_type=card.type)
+        self._apply_effect(game, player, target, EFFECT_ID_DIVERGENT_FIST_DOT, 1)
         return game
     
     def _effect_zakhod_s_razvorota(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         for _ in range(2):
-            udar_card = next((c for c in player.deck if c.name == "Удар"), None)
+            udar_card = next((c for c in player.deck if c.id == "common_strike"), None)
             if udar_card:
                 player.deck.remove(udar_card)
                 player.hand.append(udar_card)
-                self._apply_effect(game, player, player, "Бесплатный Удар", 1)
+                self._apply_effect(game, player, player, EFFECT_ID_FREE_STRIKE, 1)
         return game
 
     def _effect_glubokaia_kontsentratsiia(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_effect(game, player, player, "Глубокая Концентрация", 2)
+        self._apply_effect(game, player, player, "itadori_deep_concentration", 2)
         return game
 
     def _effect_nesgibaemaia_volia(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_effect(game, player, player, "Последний Бой", 5)
+        self._apply_effect(game, player, player, "itadori_unwavering_will", 5)
         return game
     
     def _effect_sikigami_ugolki(self, game: Game, player: Player, target_id: str, targets_ids: list[str]):
-        target = self._find_player(game, target_id)
-        if not target: return game
+        if not targets_ids:
+            return game
         
-        left = self._get_left_player(game, self._get_player_index(game, target.id))
-        right = self._get_right_player(game, self._get_player_index(game, target.id))
-        
-        self._deal_damage(game, player, target, 300)
-        if left: self._deal_damage(game, player, left, 300)
-        if right: self._deal_damage(game, player, right, 300)
+        card = next((c for c in player.character.unique_cards if c.id == 'jogo_ember_insects'), None)
+        if not card:
+            return game
 
+        for t_id in targets_ids:
+            target = self._find_player(game, t_id)
+            if target:
+                self._deal_damage(game, player, target, 300, card=card, card_type=card.type)
+        
         return game
 
     def _effect_izverzhenie_vulkana(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
-        for op in opponents: self._deal_damage(game, player, op, 500)
+        card = next(c for c in player.character.unique_cards if c.id == 'jogo_volcano_eruption')
+        for op in opponents: self._deal_damage(game, player, op, 500, card=card, card_type=card.type)
         return game
 
     def _effect_maksimum_meteor(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        self._deal_damage(game, player, target, 2000)
+        card = next(c for c in player.character.unique_cards if c.id == 'jogo_maximum_meteor')
+        self._deal_damage(game, player, target, 2000, card=card, card_type=card.type)
         left = self._get_left_player(game, self._get_player_index(game, target.id))
         right = self._get_right_player(game, self._get_player_index(game, target.id))
-        if left: self._deal_damage(game, player, left, 500)
-        if right: self._deal_damage(game, player, right, 500)
+        if left: self._deal_damage(game, player, left, 500, card=card, card_type=card.type)
+        if right: self._deal_damage(game, player, right, 500, card=card, card_type=card.type)
         return game
 
     def _effect_grob_stalnoi_gory(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_domain_to_opponents(game, player, "Гроб Стальной Горы", 3)
+        self._apply_domain_to_opponents(game, player, "jogo_coffin_of_the_iron_mountain", 3)
         return game
 
     def _effect_klinok_usilennyi_energiei(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        self._deal_damage(game, player, target, 500)
+        card = next(c for c in player.character.unique_cards if c.id == 'yuta_energy_blade')
+        self._deal_damage(game, player, target, 500, card=card, card_type=card.type)
         return game
 
     def _effect_polnoe_proiavlenie_rika(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_effect(game, player, player, "Проявление: Рика", 3)
+        self._apply_effect(game, player, player, "yuta_rika_manifestation", 3)
         return game
 
     def _effect_istinnaia_i_vzaimnaia_liubov(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_effect(game, player, player, "Истинная и Взаимная Любовь", 3)
+        self._apply_effect(game, player, player, "yuta_true_mutual_love", 3)
         return game
     
     def _apply_domain_to_opponents(self, game: Game, source: Player, effect_name: str, duration: int):
          # Cancel previous domain
+        domain_effect_ids = [
+            "gojo_unlimited_void", "sukuna_malevolent_shrine", 
+            "mahito_self_embodiment_of_perfection", "jogo_coffin_of_the_iron_mountain", 
+            "yuta_true_mutual_love"
+        ]
         for p in game.players:
-            p.effects = [e for e in p.effects if e.name not in ["Необъятная Бездна", "Злобное Святилище", "Самовоплощение Совершенства", "Гроб Стальной Горы", "Истинная и Взаимная Любовь"]]
+            p.effects = [e for e in p.effects if e.name not in domain_effect_ids]
         
         opponents = [p for p in game.players if p.id != source.id]
         for op in opponents:
             self._apply_effect(game, source, op, effect_name, duration)
     
-    def _get_effect_function(self, card_name: str) -> callable:
+    def _get_effect_function(self, card_id: str) -> callable:
         effect_map = {
-            "Удар": self._effect_udar, "Защита": self._effect_zashchita, "Концентрация": self._effect_kontsentratsiia,
-            "Песнопение (Чант)": self._effect_pesnopenie, "Простая Территория": self._effect_prostaia_territoriia,
-            "Чувства Опадающего Цветка": self._effect_chuvstva_opadaiushchego_tsvetka,
-            "Обратная Проклятая Техника": self._effect_obratnaia_proklaiataia_tekhnika, "Чёрная Вспышка": self._effect_chernaia_vspyshka,
-            "Усиленный Удар": self._effect_usilennyi_udar, "Техника Бесконечности: Нейтраль": self._effect_neitral,
-            "Проклятая техника: \"Синий\"": self._effect_sinii, "Обратная проклятая техника: \"Красный\"": self._effect_krasnyi,
-            "Мнимая техника: \"Фиолетовый\"": self._effect_fioletovyi,
-            "Расширение Территории: Необъятная Бездна": self._effect_neobiatnaia_bezdna,
-            "Разрез": self._effect_razrez, "Расщепление": self._effect_rasshcheplenie, "Расщепление: Паутина": self._effect_rasshcheplenie_pautina,
-            "Камино (Пламенная стрела)": self._effect_kamino, "Расширение Территории: Злобное Святилище": self._effect_zlobnoe_sviatilishche,
-            "Касание Души": self._effect_kasanie_dushi, "Искажение Души": self._effect_iskazhenie_dushi,
-            "Отталкивание Тела": self._effect_ottalkivanie_tela, "Искажённое Тело Изорённых Убийств": self._effect_istinnoe_telo,
-            "Расширение Территории: Самовоплощение Совершенства": self._effect_samovoploshchenie_sovershenstva,
-            "Кулак Дивергента": self._effect_kulak_divergenta, "Заход с разворота": self._effect_zakhod_s_razvorota,
-            "Глубокая Концентрация": self._effect_glubokaia_kontsentratsiia, "Несгибаемая Воля": self._effect_nesgibaemaia_volia,
-            "Сикигами: Угольки": self._effect_sikigami_ugolki, "Извержение Вулкана": self._effect_izverzhenie_vulkana,
-            "Максимум: Метеор": self._effect_maksimum_meteor, "Расширение Территории: Гроб Стальной Горы": self._effect_grob_stalnoi_gory,
-            "Клинок, Усиленный Энергией": self._effect_klinok_usilennyi_energiei,
-            "Проявление: Рика": self._effect_polnoe_proiavlenie_rika,
-            "Расширение Территории: Истинная и Взаимная Любовь": self._effect_istinnaia_i_vzaimnaia_liubov,
+            "common_strike": self._effect_udar, 
+            "common_defense": self._effect_zashchita, 
+            "common_concentration": self._effect_kontsentratsiia,
+            "common_chant": self._effect_pesnopenie, 
+            "common_simple_domain": self._effect_prostaia_territoriia,
+            "common_falling_blossom_emotion": self._effect_chuvstva_opadaiushchego_tsvetka,
+            "common_reverse_cursed_technique": self._effect_obratnaia_proklaiataia_tekhnika, 
+            "common_black_flash": self._effect_chernaia_vspyshka,
+            "gojo_strengthened_strike": self._effect_usilennyi_udar, 
+            "gojo_infinity": self._effect_neitral,
+            "gojo_blue": self._effect_sinii, 
+            "gojo_red": self._effect_krasnyi,
+            "gojo_purple": self._effect_fioletovyi,
+            "gojo_unlimited_void": self._effect_neobiatnaia_bezdna,
+            "sukuna_cleave": self._effect_razrez, 
+            "sukuna_dismantle": self._effect_rasshcheplenie, 
+            "sukuna_spiderweb": self._effect_rasshcheplenie_pautina,
+            "sukuna_kamino": self._effect_kamino, 
+            "sukuna_malevolent_shrine": self._effect_zlobnoe_sviatilishche,
+            "mahito_soul_touch": self._effect_kasanie_dushi, 
+            "mahito_soul_distortion": self._effect_iskazhenie_dushi,
+            "mahito_body_repel": self._effect_ottalkivanie_tela, 
+            "mahito_true_form": self._effect_istinnoe_telo,
+            "mahito_self_embodiment_of_perfection": self._effect_samovoploshchenie_sovershenstva,
+            "itadori_divergent_fist": self._effect_kulak_divergenta, 
+            "itadori_slaughter_demon": self._effect_zakhod_s_razvorota,
+            "itadori_deep_concentration": self._effect_glubokaia_kontsentratsiia, 
+            "itadori_unwavering_will": self._effect_nesgibaemaia_volia,
+            "jogo_ember_insects": self._effect_sikigami_ugolki, 
+            "jogo_volcano_eruption": self._effect_izverzhenie_vulkana,
+            "jogo_maximum_meteor": self._effect_maksimum_meteor, 
+            "jogo_coffin_of_the_iron_mountain": self._effect_grob_stalnoi_gory,
+            "yuta_energy_blade": self._effect_klinok_usilennyi_energiei,
+            "yuta_rika_manifestation": self._effect_polnoe_proiavlenie_rika,
+            "yuta_true_mutual_love": self._effect_istinnaia_i_vzaimnaia_liubov,
         }
-        return effect_map.get(card_name)
+        return effect_map.get(card_id)
 
     # --- Utility methods ---
     def _find_player_in_lobby(self, lobby: Lobby, player_id: str) -> Player | None:

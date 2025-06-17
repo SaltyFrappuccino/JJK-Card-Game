@@ -16,16 +16,15 @@ const LobbyPage: React.FC = () => {
   const handleCharacterSelect = async (character: Character) => {
     if (!lobby || !player?.id) return;
     
-    // Prevent selecting already chosen character
-    const isChosen = lobby.players.some(p => p.character?.name === character.name);
-    if (isChosen) {
+    const isTaken = lobby.players.some(p => p.character?.id === character.id);
+    if (isTaken) {
       setError('This character is already taken.');
       return;
     }
 
     setSelectedCharacter(character);
     try {
-      const { data } = await api.selectCharacter(lobby.id, player.id, character.name);
+      const { data } = await api.selectCharacter(lobby.id, player.id, character.id);
       setLobby(data);
     } catch (error: any) {
       setError(error.response?.data?.detail || 'Failed to select character.');
@@ -80,11 +79,11 @@ const LobbyPage: React.FC = () => {
           <h3>Выберите персонажа</h3>
           <div className="character-carousel">
             {ALL_CHARACTERS.map(char => {
-              const isTaken = lobby.players.some(p => p.character?.name === char.name);
+              const isTaken = lobby.players.some(p => p.character?.id === char.id);
               return (
                 <div 
-                  key={char.name} 
-                  className={`character-card ${selectedCharacter?.name === char.name ? 'selected' : ''} ${isTaken ? 'taken' : ''}`}
+                  key={char.id} 
+                  className={`character-card ${selectedCharacter?.id === char.id ? 'selected' : ''} ${isTaken ? 'taken' : ''}`}
                   onClick={() => !isTaken && handleCharacterSelect(char)}
                 >
                   <h4>{char.name}</h4>
@@ -101,7 +100,7 @@ const LobbyPage: React.FC = () => {
             <p><strong>{selectedCharacter.passive_ability_name}</strong>: {selectedCharacter.passive_ability_description}</p>
             <h4>Уникальные карты:</h4>
             <ul>
-              {selectedCharacter.unique_cards.map(card => <li key={card.name}>{card.name}</li>)}
+              {selectedCharacter.unique_cards.map(card => <li key={card.id}>{card.name}</li>)}
             </ul>
           </div>
         )}

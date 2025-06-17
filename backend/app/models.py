@@ -27,6 +27,7 @@ class CardType(str, Enum):
     ANTI_DOMAIN_TECHNIQUE = "Антитерриториальная Техника"
 
 class Card(BaseModel):
+    id: str
     name: str
     type: CardType
     rarity: Rarity
@@ -37,6 +38,7 @@ class Card(BaseModel):
     is_copied: bool = False
 
 class Character(BaseModel):
+    id: str
     name: str
     max_hp: int
     max_energy: int

@@ -120,3 +120,22 @@ button:focus-visible {
 .training-controls {
   margin-top: 10px;
 }
+
+.card-condition {font-weight:bold;color:#ffae00;animation:neonPulse 2s infinite alternate;}
+.card-synergy {font-weight:bold;color:#00eaff;animation:neonPulse 2s infinite alternate;}
+
+@keyframes neonPulse {from {text-shadow:0 0 5px #fff,0 0 10px #fff;} to {text-shadow:0 0 20px #00ffff,0 0 30px #00ffff;}}
+
+/* Rarity frames */
+.rarity-common {border:2px solid #999;}
+.rarity-uncommon {border:2px solid #2ecc71;box-shadow:0 0 4px #2ecc71;}
+.rarity-rare {border:2px solid #3498db;box-shadow:0 0 4px #3498db;}
+.rarity-epic {border:2px solid #9b59b6;box-shadow:0 0 6px #9b59b6;}
+.rarity-legendary {border:2px solid #f1c40f;animation:legendGlow 3s infinite alternate;}
+
+@keyframes legendGlow {0%{box-shadow:0 0 8px #f1c40f;}100%{box-shadow:0 0 16px #f39c12;}}
+
+/* Special card names */
+.name-blue {color:#00aaff;text-shadow:0 0 5px #00aaff,0 0 10px #00aaff;}
+.name-red {color:#ff4b4b;text-shadow:0 0 5px #ff4b4b,0 0 10px #ff4b4b;}
+.name-purple {color:#c770ff;text-shadow:0 0 5px #c770ff,0 0 10px #c770ff;}

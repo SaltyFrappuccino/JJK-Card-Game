@@ -1,4 +1,5 @@
 export interface Card {
+  id: string;
   name: string;
   type: string;
   rarity: string;
@@ -9,6 +10,7 @@ export interface Card {
 }
 
 export interface Character {
+  id: string;
   name: string;
   max_hp: number;
   max_energy: number;

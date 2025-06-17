@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import { useWS } from '../hooks/useSocket';
 import PlayerPod from '../components/PlayerPod';
-import CardComponent from '../components/Card';
-import type { Card } from '../types';
+import { Card } from '../components/Card';
+import type { Card as CardType } from '../types';
 
-const getMultiTargetCount = (card: Card): number | null => {
-  if (card.name === 'Сикигами «Угольки»') {
+const getMultiTargetCount = (card: CardType): number | null => {
+  if (card.id === 'jogo_ember_insects') {
     return 3;
   }
   return null;
@@ -18,10 +18,10 @@ const GamePage: React.FC = () => {
   const { emitPlayCard, emitEndTurn, emitDiscardCards, emitAddDummy, emitRemoveDummy } = useWS();
   const navigate = useNavigate();
 
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
   const [targeting, setTargeting] = useState(false);
   const [discardMode, setDiscardMode] = useState(false);
-  const [discardSelection, setDiscardSelection] = useState<Card[]>([]);
+  const [discardSelection, setDiscardSelection] = useState<CardType[]>([]);
   const [multiTargetSelection, setMultiTargetSelection] = useState<string[]>([]);
 
   const multiTargetCount = useMemo(() => selectedCard ? getMultiTargetCount(selectedCard) : null, [selectedCard]);
@@ -29,7 +29,7 @@ const GamePage: React.FC = () => {
   const selfPlayer = useMemo(() => game?.players.find(p => p.id === self?.id), [game, self]);
   const hasDiscardedThisRound = selfPlayer && game ? selfPlayer.last_discard_round === game.round_number : false;
 
-  const handleCardClick = (card: Card) => {
+  const handleCardClick = (card: CardType) => {
     if (discardMode) {
       const exists = discardSelection.includes(card);
       let updated = exists ? discardSelection.filter(c=>c!==card) : [...discardSelection, card];
@@ -76,14 +76,14 @@ const GamePage: React.FC = () => {
 
         if (newSelection.length === multiTargetCount) {
           // Auto-confirm when max targets are selected
-          emitPlayCard(selectedCard.name, undefined, newSelection);
+          emitPlayCard(selectedCard.id, undefined, newSelection);
           setSelectedCard(null);
           setTargeting(false);
           setMultiTargetSelection([]);
         }
       }
     } else { // If it's a single-target card
-      emitPlayCard(selectedCard.name, targetId);
+      emitPlayCard(selectedCard.id, targetId);
       setSelectedCard(null);
       setTargeting(false);
     }
@@ -92,7 +92,7 @@ const GamePage: React.FC = () => {
   const confirmMultiTarget = () => {
     if (!selectedCard || multiTargetSelection.length === 0) return;
     
-    emitPlayCard(selectedCard.name, undefined, multiTargetSelection);
+    emitPlayCard(selectedCard.id, undefined, multiTargetSelection);
     setSelectedCard(null);
     setTargeting(false);
     setMultiTargetSelection([]);
@@ -121,7 +121,7 @@ const GamePage: React.FC = () => {
 
   const handleConfirmDiscard = () => {
     if (discardSelection.length === 0) return;
-    emitDiscardCards(discardSelection.map(c=>c.name));
+    emitDiscardCards(discardSelection.map(c=>c.id));
     setDiscardMode(false);
     setDiscardSelection([]);
   };
@@ -142,7 +142,7 @@ const GamePage: React.FC = () => {
   }
   
   const isMyTurn = currentPlayer?.id === selfPlayer.id;
-  const viewerIsGojo = selfPlayer?.character?.name === 'Сатору Годзё';
+  const viewerIsGojo = selfPlayer?.character?.id === 'gojo_satoru';
 
   // Reorder players so that selfPlayer is at the bottom center
   const playerOrder = [...game.players];
@@ -190,8 +190,8 @@ const GamePage: React.FC = () => {
         </div>
         <div className="player-hand">
           {selfPlayer.hand.map((card, i) => (
-            <CardComponent 
-              key={`${card.name}-${i}`} 
+            <Card 
+              key={`${card.id}-${i}`} 
               card={card} 
               isPlayable={isMyTurn && (selfPlayer.energy ?? 0) >= card.cost}
               onClick={() => handleCardClick(card)}

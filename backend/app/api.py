@@ -59,7 +59,7 @@ async def join_lobby(lobby_id: str, player: PlayerCreate, lm: LobbyManager = Dep
 @router.post("/lobby/{lobby_id}/character", response_model=LobbyInfo)
 async def select_character(lobby_id: str, selection: CharacterSelectRequest, lm: LobbyManager = Depends(get_lobby_manager)):
     try:
-        lobby = await lm.select_character(lobby_id, selection.player_id, selection.character_name)
+        lobby = await lm.select_character(lobby_id, selection.player_id, selection.character_id)
         return lobby
     except (LobbyNotFound, PlayerNotFound, CharacterNotFound) as e:
         raise HTTPException(status_code=404, detail=str(e))

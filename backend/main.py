@@ -52,7 +52,7 @@ async def websocket_endpoint(ws: WebSocket, lobby_id: str, player_id: str):
                     game = game_manager.play_card(
                         payload.get("game_id"),
                         player_id,
-                        payload.get("card_name"),
+                        payload.get("card_id"),
                         payload.get("target_id"),
                         payload.get("targets_ids"),
                     )
@@ -72,7 +72,7 @@ async def websocket_endpoint(ws: WebSocket, lobby_id: str, player_id: str):
                     game = game_manager.discard_cards(
                         payload.get("game_id"),
                         player_id,
-                        payload.get("card_names", []),
+                        payload.get("card_ids", []),
                     )
                     await broadcast(lobby_id, {"type": "game_state", "payload": game.dict()})
                 except GameException as e:

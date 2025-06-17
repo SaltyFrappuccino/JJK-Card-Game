@@ -42,23 +42,23 @@ class LobbyManager:
         await broadcast(lobby_id, {"type": "lobby_update", "payload": lobby.dict()})
         return lobby
 
-    async def select_character(self, lobby_id: str, player_id: str, character_name: str) -> Lobby:
+    async def select_character(self, lobby_id: str, player_id: str, character_id: str) -> Lobby:
         lobby = self.get_lobby(lobby_id)
         if not lobby:
             raise LobbyNotFound(f"Lobby with id {lobby_id} not found.")
 
         # Check if character is already taken
         for p in lobby.players:
-            if p.character and p.character.name == character_name:
-                raise CharacterAlreadyTaken(f"Character {character_name} is already taken.")
+            if p.character and p.character.id == character_id:
+                raise CharacterAlreadyTaken(f"Character {character_id} is already taken.")
 
         player = next((p for p in lobby.players if p.id == player_id), None)
         if not player:
             raise PlayerNotFound(f"Player with id {player_id} not found in lobby {lobby_id}.")
 
-        character_template = next((c for c in characters if c.name == character_name), None)
+        character_template = next((c for c in characters if c.id == character_id), None)
         if not character_template:
-            raise CharacterNotFound(f"Character with name {character_name} not found.")
+            raise CharacterNotFound(f"Character with id {character_id} not found.")
 
         player.character = character_template
         player.hp = character_template.max_hp
