@@ -64,6 +64,7 @@ export interface GameState {
   active_domain?: Card;
   game_log: string[];
   is_training: boolean;
+  turn_start_time?: string;
 }
 
 export interface Game {
