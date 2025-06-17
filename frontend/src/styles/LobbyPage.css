@@ -108,4 +108,20 @@
 .copy-code-btn {
     display: block;
     margin: 10px auto 20px auto;
+}
+
+.kick-btn {
+    margin-left: 10px;
+    padding: 0 5px;
+    background-color: #c0392b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.kick-btn:hover {
+    background-color: #e74c3c;
 } 

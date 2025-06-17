@@ -32,6 +32,10 @@ class CharacterSelectRequest(BaseModel):
     player_id: str
     character_id: str
 
+class KickPlayerRequest(BaseModel):
+    host_id: str
+    player_to_kick_id: str
+
 # --- Schemas for Game State ---
 
 class GameStateInfo(BaseModel):

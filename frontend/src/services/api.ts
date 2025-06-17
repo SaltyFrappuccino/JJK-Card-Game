@@ -24,4 +24,6 @@ export const api = {
     apiClient.post<LobbyInfo>(`/lobby/${lobbyId}/character`, { player_id: playerId, character_id: characterId }),
   startGame: (lobbyId: string, playerId: string) =>
     apiClient.post(`/lobby/${lobbyId}/start`, { player_id: playerId }),
+  kickPlayer: (lobbyId: string, hostId: string, playerToKickId: string) =>
+    apiClient.post<LobbyInfo>(`/lobby/${lobbyId}/kick`, { host_id: hostId, player_to_kick_id: playerToKickId }),
 }; 

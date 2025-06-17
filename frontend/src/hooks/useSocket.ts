@@ -23,6 +23,15 @@ export const useWS = () => {
         }
       }
       if (type === 'error') setError(payload);
+      if (type === 'player_kicked') {
+        console.log('Player kicked:', payload);
+        if (payload.kicked_player_id === player.id) {
+          alert(`Вы были кикнуты из лобби хостом.`);
+          setLobby(null);
+          setGame(null);
+          navigate('/');
+        }
+      }
     };
 
     ws.onerror = () => setError('WebSocket error');

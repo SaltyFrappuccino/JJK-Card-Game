@@ -91,4 +91,26 @@ class LobbyManager:
         
         return game
 
+    async def kick_player(self, lobby_id: str, host_id: str, player_to_kick_id: str) -> Lobby:
+        lobby = self.get_lobby(lobby_id)
+        if not lobby:
+            raise LobbyNotFound(f"Lobby with id {lobby_id} not found.")
+        
+        if lobby.host_id != host_id:
+            raise LobbyException("Только хост может кикать игроков.")
+
+        if host_id == player_to_kick_id:
+            raise LobbyException("Хост не может кикнуть сам себя.")
+
+        player_to_kick = next((p for p in lobby.players if p.id == player_to_kick_id), None)
+        if not player_to_kick:
+            raise PlayerNotFound(f"Игрок с id {player_to_kick_id} не найден в лобби.")
+        
+        lobby.players.remove(player_to_kick)
+        
+        await broadcast(lobby_id, {"type": "lobby_update", "payload": lobby.dict()})
+        await broadcast(lobby_id, {"type": "player_kicked", "payload": {"kicked_player_id": player_to_kick_id, "kicked_player_nickname": player_to_kick.nickname}})
+        
+        return lobby
+
 lobby_manager = LobbyManager()

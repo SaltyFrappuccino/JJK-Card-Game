@@ -13,6 +13,20 @@ const LobbyPage: React.FC = () => {
   const [isStarting, setIsStarting] = useState(false);
   const navigate = useNavigate();
 
+  const isHost = lobby?.host_id === player?.id;
+
+  const handleKickPlayer = async (playerIdToKick: string) => {
+    if (!lobby || !player?.id || !isHost) return;
+
+    if (window.confirm("Вы уверены, что хотите кикнуть этого игрока?")) {
+      try {
+        await api.kickPlayer(lobby.id, player.id, playerIdToKick);
+      } catch (error: any) {
+        setError(error.response?.data?.detail || 'Не удалось кикнуть игрока.');
+      }
+    }
+  };
+
   const handleCharacterSelect = async (character: Character) => {
     if (!lobby || !player?.id) return;
     
@@ -49,7 +63,6 @@ const LobbyPage: React.FC = () => {
     return null;
   }
   
-  const isHost = lobby.host_id === player.id;
   const allPlayersReady = lobby.players.every(p => p.character);
   const isTraining = lobby.is_training;
 
@@ -67,8 +80,13 @@ const LobbyPage: React.FC = () => {
             <ul>
               {lobby.players.map(p => (
                 <li key={p.id}>
-                  {p.nickname} {p.id === lobby.host_id ? '(Host)' : ''}
-                  {p.character ? ` - ${p.character.name}` : ' - Selecting...'}
+                  {p.nickname} {p.id === lobby.host_id ? '(Хост)' : ''}
+                  {p.character ? ` - ${p.character.name}` : ' - Выбирает...'}
+                  {isHost && p.id !== player.id && (
+                    <button className="kick-btn" onClick={() => handleKickPlayer(p.id)}>
+                      &times;
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
