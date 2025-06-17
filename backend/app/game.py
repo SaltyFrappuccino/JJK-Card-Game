@@ -588,6 +588,15 @@ class GameManager:
         return game
 
     def _effect_sinii(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
+        if any(e.name == "gojo_blue_effect" for e in player.effects):
+            game.game_log.append("Эффект 'Синий' уже активен.")
+            # Still deal damage, just don't apply the effect again
+            opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
+            targets = random.sample(opponents, min(len(opponents), 2))
+            for target in targets:
+                self._deal_damage(game, player, target, 1000, card_type=CardType.TECHNIQUE)
+            return game
+
         opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
         targets = random.sample(opponents, min(len(opponents), 2))
         for target in targets:
@@ -598,6 +607,16 @@ class GameManager:
     def _effect_krasnyi(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
+
+        if any(e.name == "gojo_red_effect" for e in player.effects):
+            game.game_log.append("Эффект 'Красный' уже активен.")
+            # Still deal damage
+            self._deal_damage(game, player, target, 1200, card_type=CardType.TECHNIQUE)
+            target_index = self._get_player_index(game, target_id)
+            right_player = self._get_right_player(game, target_index)
+            if right_player:
+                self._deal_damage(game, player, right_player, 600, card_type=CardType.TECHNIQUE)
+            return game
         
         self._deal_damage(game, player, target, 1200, card_type=CardType.TECHNIQUE)
         
@@ -613,6 +632,17 @@ class GameManager:
         if not target: return game
         card = next(c for c in player.character.unique_cards if c.id == 'gojo_purple')
         self._deal_damage(game, player, target, 4000, ignores_block=True, card=card, card_type=card.type)
+        
+        # Remove the prerequisite effects
+        blue_effect = next((e for e in player.effects if e.name == "gojo_blue_effect"), None)
+        red_effect = next((e for e in player.effects if e.name == "gojo_red_effect"), None)
+        if blue_effect:
+            player.effects.remove(blue_effect)
+            game.game_log.append("Эффект 'Синий' был поглощён.")
+        if red_effect:
+            player.effects.remove(red_effect)
+            game.game_log.append("Эффект 'Красный' был поглощён.")
+            
         return game
     
     def _effect_fioletovyi_yadernyi(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
