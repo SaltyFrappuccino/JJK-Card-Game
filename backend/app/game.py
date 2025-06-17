@@ -7,7 +7,7 @@ from .exceptions import GameException
 
 # Effect IDs
 EFFECT_ID_SOUL_DISTORTION = "mahito_self_embodiment_of_perfection" # Махито РТ дебафф
-EFFECT_ID_UNLIMITED_VOID = "gojo_unlimited_void" # Годзё РТ дебафф
+EFFECT_ID_UNLIMITED_VOID = "gojo_unlimited_void" # свГодзё РТ дебафф
 EFFECT_ID_DIVERGENT_FIST_DOT = "itadori_divergent_fist_dot"
 EFFECT_ID_BURN = "jogo_burn"
 EFFECT_ID_FREE_STRIKE = "free_strike_effect"
@@ -92,20 +92,25 @@ class GameManager:
         if card_to_play.is_copied and any(e.name == "yuta_true_mutual_love" for e in player.effects):
             card_cost = -(-card_cost // 4) # Ceiling division
 
-        # Manji Kick counter check on the one being attacked
+        # Manji Kick counter check
         target = self._find_player(game, target_id)
         if target:
-            manji_kick_counter = next((e for e in target.effects if e.name == "manji_kick_counter" and e.source_player_id == player.id), None)
-            is_attacking_card = card_to_play.type in [CardType.TECHNIQUE, CardType.ACTION] and "Наносит" in card_to_play.description
+            # The player attacking has the counter effect on them
+            manji_kick_counter = next((e for e in player.effects if e.name == "manji_kick_counter"), None)
             
-            if manji_kick_counter and is_attacking_card and card_to_play.type != CardType.DOMAIN_EXPANSION:
-                game.game_log.append(f"Атака {player.nickname} на {target.nickname} была отменена эффектом 'Манджи-Кик'!")
-                target.effects.remove(manji_kick_counter)
-                # We still need to discard the card and pay the cost
-                player.energy -= card_cost
-                player.hand.remove(card_to_play)
-                player.discard_pile.append(card_to_play)
-                return game
+            # Check if the target of the card is the one who applied the counter
+            if manji_kick_counter and manji_kick_counter.source_player_id == target_id:
+                is_attacking_card = card_to_play.type in [CardType.TECHNIQUE, CardType.ACTION] and "Наносит" in card_to_play.description
+                
+                if is_attacking_card and card_to_play.type != CardType.DOMAIN_EXPANSION:
+                    itadori = self._find_player(game, manji_kick_counter.source_player_id)
+                    game.game_log.append(f"Атака {player.nickname} была отменена эффектом 'Манджи-Кик' от {itadori.nickname}!")
+                    player.effects.remove(manji_kick_counter)
+                    # We still need to discard the card and pay the cost
+                    player.energy -= card_cost
+                    player.hand.remove(card_to_play)
+                    player.discard_pile.append(card_to_play)
+                    return game
 
         if not game.is_training:
             if not is_free_udar and player.energy < card_cost:
