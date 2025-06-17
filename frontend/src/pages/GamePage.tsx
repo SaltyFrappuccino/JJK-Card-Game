@@ -28,8 +28,9 @@ const GamePage: React.FC = () => {
   const currentPlayer = useMemo(() => game ? game.players[game.current_turn_player_index] : null, [game]);
   const selfPlayer = useMemo(() => game?.players.find(p => p.id === self?.id), [game, self]);
   const hasDiscardedThisRound = selfPlayer && game ? selfPlayer.last_discard_round === game.round_number : false;
+  const isMyTurn = useMemo(() => currentPlayer?.id === selfPlayer?.id, [currentPlayer, selfPlayer]);
 
-  const handleCardClick = (card: CardType) => {
+  const handleCardClick = React.useCallback((card: CardType) => {
     if (discardMode) {
       const exists = discardSelection.includes(card);
       let updated = exists ? discardSelection.filter(c=>c!==card) : [...discardSelection, card];
@@ -52,8 +53,36 @@ const GamePage: React.FC = () => {
       setTargeting(true);
       setMultiTargetSelection([]);
     }
-  };
-  
+  }, [discardMode, isMyTurn, selfPlayer, selectedCard, discardSelection]);
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isMyTurn || !selfPlayer) return;
+
+      const key = event.key;
+      let cardIndex = -1;
+
+      if (key >= '1' && key <= '9') {
+        cardIndex = parseInt(key) - 1;
+      } else if (key === '0') {
+        cardIndex = 9;
+      }
+
+      if (cardIndex !== -1 && selfPlayer.hand.length > cardIndex) {
+        const cardToPlay = selfPlayer.hand[cardIndex];
+        // Check if playable before triggering the click
+        if ((selfPlayer.energy ?? 0) >= cardToPlay.cost) {
+          handleCardClick(cardToPlay);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMyTurn, selfPlayer, handleCardClick]);
+
   const handlePlayerSelect = (targetId: string, event?: React.MouseEvent) => {
     if (!selectedCard || !selfPlayer?.id) return;
 
@@ -141,7 +170,6 @@ const GamePage: React.FC = () => {
     );
   }
   
-  const isMyTurn = currentPlayer?.id === selfPlayer.id;
   const viewerIsGojo = selfPlayer?.character?.id === 'gojo_satoru';
 
   // Reorder players so that selfPlayer is at the bottom center
