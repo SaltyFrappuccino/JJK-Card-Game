@@ -194,7 +194,7 @@ characters = [
         max_hp=4000,
         max_energy=50000,
         passive_ability_name="Праздная Трансфигурация",
-        passive_ability_description="Карта \"Удар\" наносит вам 0 урона. Вы начинаете игру с 0 Искажённых Душ.",
+        passive_ability_description="Карта \"Удар\" наносит вам 0 урона. Вы начинаете игру с 0 Искажённых Душ. Каждые 2 своих хода вы гарантированно получаете карту 'Касание Души' в руку.",
         unique_cards=[
             Card(
                 id="mahito_soul_touch",

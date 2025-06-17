@@ -69,10 +69,14 @@ class Player(BaseModel):
     # For chant effect
     chant_active_for_turn: bool = False
     # Gojo's state for cost reduction
-    cost_modifier: float = 0.9  # Initial 10% discount
-    is_blindfolded: bool = True
+    cost_modifier: float = 1.0
+    is_blindfolded: bool = False
     # Mahito's resources
     distorted_souls: int = 0
+    mahito_turn_counter: int = 0
+
+    def dict(self, **kwargs):
+        return self.model_dump(**kwargs)
 
 class Lobby(BaseModel):
     id: str

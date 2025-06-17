@@ -293,6 +293,27 @@ class GameManager:
         # Draw the rest of the cards needed
         remaining_to_draw = cards_to_draw_count - len(drawn_cards)
         if remaining_to_draw > 0:
+            # Technique anti-drought mechanism
+            cards_to_be_drawn = draw_pool[:remaining_to_draw]
+            rest_of_deck = draw_pool[remaining_to_draw:]
+
+            if not any(c.type == CardType.TECHNIQUE for c in cards_to_be_drawn) and any(c.type == CardType.TECHNIQUE for c in rest_of_deck):
+                first_tech_index = -1
+                for i, card in enumerate(rest_of_deck):
+                    if card.type == CardType.TECHNIQUE:
+                        first_tech_index = i
+                        break
+                
+                if first_tech_index != -1:
+                    technique_to_move = rest_of_deck.pop(first_tech_index)
+                    card_to_swap = cards_to_be_drawn.pop(-1) if cards_to_be_drawn else None
+                    cards_to_be_drawn.append(technique_to_move)
+                    if card_to_swap:
+                        rest_of_deck.insert(0, card_to_swap)
+            
+            draw_pool = cards_to_be_drawn + rest_of_deck
+            
+            # Final draw
             drawn_cards.extend(draw_pool[:remaining_to_draw])
             draw_pool = draw_pool[remaining_to_draw:]
             
@@ -369,6 +390,16 @@ class GameManager:
             player.block += 500
 
     def _process_start_of_turn_effects(self, game: Game, player: Player):
+        # Mahito's passive Soul Touch card
+        if player.character and player.character.id == "mahito":
+            player.mahito_turn_counter += 1
+            if player.mahito_turn_counter >= 2:
+                soul_touch_card = next((c.copy(deep=True) for c in player.character.unique_cards if c.id == "mahito_soul_touch"), None)
+                if soul_touch_card:
+                    player.hand.append(soul_touch_card)
+                    player.mahito_turn_counter = 0
+                    game.game_log.append(f"{player.nickname} получает 'Касание Души' в руку благодаря своей пассивной способности.")
+
         # Mahito's Domain soul gain
         if player.character and player.character.id == "mahito":
             opponents_in_domain = sum(1 for p in game.players if any(e.name == EFFECT_ID_SOUL_DISTORTION and e.source_player_id == player.id for e in p.effects))
