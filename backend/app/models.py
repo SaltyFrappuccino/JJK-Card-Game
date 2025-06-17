@@ -24,6 +24,7 @@ class CardType(str, Enum):
     ACTION = "Действие"
     TECHNIQUE = "Техника"
     DOMAIN_EXPANSION = "Расширение Территории"
+    ANTI_DOMAIN_TECHNIQUE = "Антитерриториальная Техника"
 
 class Card(BaseModel):
     name: str
@@ -33,6 +34,7 @@ class Card(BaseModel):
     description: str
     source_player_id: Optional[str] = None # For domain expansions
     duration: Optional[int] = None # For domain expansions
+    is_copied: bool = False
 
 class Character(BaseModel):
     name: str
@@ -61,8 +63,11 @@ class Player(BaseModel):
     used_red: bool = False
     # Mahito's state for "True Body"
     successful_black_flash: bool = False
+    ignore_block_attacks_count: int = 0
     # For chant effect
     chant_active_for_turn: bool = False
+    # Gojo's cost modifier
+    cost_modifier: float = 1.0
 
 class Lobby(BaseModel):
     id: str

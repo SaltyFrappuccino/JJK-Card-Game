@@ -1,10 +1,10 @@
 import React from 'react';
-import type { Card as CardType } from '../types';
+import type { Card } from '../types';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 
 interface CardProps {
-  card: CardType;
+  card: Card;
   isPlayable: boolean;
   onClick?: () => void;
   index?: number;
@@ -12,6 +12,16 @@ interface CardProps {
   isSelected?: boolean;
   className?: string;
 }
+
+const parseDescription = (description: string) => {
+  const parts = description.split(/(Условие:|Синергия:)/g);
+  return parts.map((part, index) => {
+    if (part === 'Условие:' || part === 'Синергия:') {
+      return <strong key={index}>{part}</strong>;
+    }
+    return part;
+  });
+};
 
 const Card: React.FC<CardProps> = ({ card, isPlayable, onClick, index = 0, total = 1, isSelected = false, className }) => {
   const angle = (index - (total - 1) / 2) * 10;
@@ -51,7 +61,7 @@ const Card: React.FC<CardProps> = ({ card, isPlayable, onClick, index = 0, total
         <span className="card-cost">{card.cost}</span>
       </div>
       <div className="card-body">
-        <p className="card-description">{card.description}</p>
+        <p className="card-description">{parseDescription(card.description)}</p>
       </div>
       <div className="card-footer">
         <span className="card-type">{card.type}</span>
