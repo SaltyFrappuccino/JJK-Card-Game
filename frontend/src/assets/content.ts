@@ -145,6 +145,7 @@ export const ALL_CHARACTERS: Character[] = [
     unique_cards: [
       { id: "yuta_energy_blade", name: 'Клинок, Усиленный Энергией', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 3000, description: 'Наносит 500 урона одной цели.' },
       { id: "yuta_rika_manifestation", name: 'Проявление: Рика', type: 'TECHNIQUE', rarity: 'EPIC', cost: 25000, description: 'На 3 ваших хода урон от пассивной способности "Рика" увеличивается до 1000 и наносится противникам слева и справа от вас.' },
+      { id: "yuta_pure_love", name: 'Чистая Любовь', type: 'TECHNIQUE', rarity: 'LEGENDARY', cost: 22000, description: "Наносит 2500 урона одной цели. После использования вы получаете эффект 'Откат Рики' на 2 раунда, который отключает вашу пассивную способность и не позволяет использовать 'Чистую Любовь' и 'Проявление: Рика'." },
       { id: "yuta_true_mutual_love", name: 'Расширение Территории: Истинная и Взаимная Любовь', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 45000, description: 'На 3 раунда стоимость всех скопированных карт техник в вашей руке и колоде делится на 4 (округляется вверх). Ваша максимальная рука увеличивается до 8 карт.' },
     ]
   },

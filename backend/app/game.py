@@ -92,6 +92,11 @@ class GameManager:
         if card_to_play.is_copied and any(e.name == "yuta_true_mutual_love" for e in player.effects):
             card_cost = -(-card_cost // 4) # Ceiling division
 
+        # Rika's Cooldown check
+        if any(e.name == "yuta_rika_cooldown" for e in player.effects):
+            if card_to_play.id in ["yuta_pure_love", "yuta_rika_manifestation"]:
+                raise GameException("Вы не можете использовать эту карту, пока активен 'Откат Рики'.")
+
         # Manji Kick counter check
         target = self._find_player(game, target_id)
         if target:
@@ -389,20 +394,21 @@ class GameManager:
                     self._deal_damage(game, source_player, player, 1500, ignores_block=True, is_effect_damage=True)
         
         if player.character and player.character.id == "yuta_okkotsu":
-            opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
-            if opponents:
-                # Check for "Проявление: Рика" effect
-                rika_manifested = any(e.name == "yuta_rika_manifestation" for e in player.effects)
-                if rika_manifested:
-                    left_player = self._get_left_player(game, self._get_player_index(game, player.id))
-                    right_player = self._get_right_player(game, self._get_player_index(game, player.id))
-                    if left_player and left_player.id != player.id:
-                        self._deal_damage(game, player, left_player, 1000)
-                    if right_player and right_player.id != player.id:
-                        self._deal_damage(game, player, right_player, 1000)
-                else:
-                    target = random.choice(opponents)
-                    self._deal_damage(game, player, target, 250)
+            if not any(e.name == "yuta_rika_cooldown" for e in player.effects):
+                opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
+                if opponents:
+                    # Check for "Проявление: Рика" effect
+                    rika_manifested = any(e.name == "yuta_rika_manifestation" for e in player.effects)
+                    if rika_manifested:
+                        left_player = self._get_left_player(game, self._get_player_index(game, player.id))
+                        right_player = self._get_right_player(game, self._get_player_index(game, player.id))
+                        if left_player and left_player.id != player.id:
+                            self._deal_damage(game, player, left_player, 1000)
+                        if right_player and right_player.id != player.id:
+                            self._deal_damage(game, player, right_player, 1000)
+                    else:
+                        target = random.choice(opponents)
+                        self._deal_damage(game, player, target, 250)
         
         if any(e.name == "mahito_true_form" for e in player.effects):
             player.block += 500
@@ -469,11 +475,12 @@ class GameManager:
             
         # Apply Yuta's passive
         if not is_effect_damage and target.character and target.character.id == "yuta_okkotsu" and card and card.type == CardType.TECHNIQUE:
-            copied_card = card.copy(deep=True)
-            copied_card.cost = int(copied_card.cost * 1.25)
-            copied_card.is_copied = True
-            target.discard_pile.append(copied_card)
-            game.game_log.append(f"Юта Оккоцу скопировал {card.name}!")
+            if not any(e.name == "yuta_rika_cooldown" for e in target.effects):
+                copied_card = card.copy(deep=True)
+                copied_card.cost = int(copied_card.cost * 1.25)
+                copied_card.is_copied = True
+                target.discard_pile.append(copied_card)
+                game.game_log.append(f"Юта Оккоцу скопировал {card.name}!")
 
         # Sukuna Passive (Energy)
         if target.character and target.character.id == "sukuna_ryomen" and \
@@ -871,6 +878,16 @@ class GameManager:
         self._apply_effect(game, player, player, "yuta_true_mutual_love", 3)
         return game
     
+    def _effect_chistaia_liubov(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
+        target = self._find_player(game, target_id)
+        if not target: return game
+        
+        card = next(c for c in player.character.unique_cards if c.id == 'yuta_pure_love')
+        self._deal_damage(game, player, target, 2500, card=card, card_type=card.type)
+        
+        self._apply_effect(game, player, player, "yuta_rika_cooldown", 3)
+        return game
+
     def _apply_domain_to_opponents(self, game: Game, source: Player, effect_name: str, duration: int):
          # Cancel previous domain
         domain_effect_ids = [
@@ -924,6 +941,7 @@ class GameManager:
             "yuta_energy_blade": self._effect_klinok_usilennyi_energiei,
             "yuta_rika_manifestation": self._effect_polnoe_proiavlenie_rika,
             "yuta_true_mutual_love": self._effect_istinnaia_i_vzaimnaia_liubov,
+            "yuta_pure_love": self._effect_chistaia_liubov,
             "gojo_remove_blindfold": self._effect_snyat_povyazku,
             "manji_kick_counter": self._effect_manji_kick,
         }
