@@ -96,7 +96,9 @@ class GameManager:
         target = self._find_player(game, target_id)
         if target:
             manji_kick_counter = next((e for e in target.effects if e.name == "manji_kick_counter" and e.source_player_id == player.id), None)
-            if manji_kick_counter and card_to_play.type == CardType.TECHNIQUE and card_to_play.rarity != Rarity.DOMAIN_EXPANSION:
+            is_attacking_card = card_to_play.type in [CardType.TECHNIQUE, CardType.ACTION] and "Наносит" in card_to_play.description
+            
+            if manji_kick_counter and is_attacking_card and card_to_play.type != CardType.DOMAIN_EXPANSION:
                 game.game_log.append(f"Атака {player.nickname} на {target.nickname} была отменена эффектом 'Манджи-Кик'!")
                 target.effects.remove(manji_kick_counter)
                 # We still need to discard the card and pay the cost
