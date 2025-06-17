@@ -430,10 +430,6 @@ class GameManager:
                 player.energy = min(player.character.max_energy, player.energy + recovery)
                 game.game_log.append(f"{player.nickname} восстанавливает {recovery} ПЭ от эффекта 'Зона'.")
 
-            if effect.name == "manji_kick_counter":
-                self._deal_damage(game, None, player, effect.value, ignores_block=True, is_effect_damage=True)
-                game.game_log.append(f"{player.nickname} получает {effect.value} урона от 'Кулака Дивергента'.")
-
             if effect.duration <= 0:
                 effects_to_remove.append(effect)
 
@@ -471,14 +467,14 @@ class GameManager:
 
         # Sukuna Passive (Energy)
         if target.character and target.character.id == "sukuna_ryomen" and \
-           source_player.character and source_player.hp and target.character and target.hp and \
+           source_player and source_player.character and source_player.hp and target.character and target.hp and \
            (source_player.hp / source_player.max_hp) > (target.hp / target.max_hp):
              restore_amount = int(target.character.max_energy * 0.05)
              target.energy = min(target.character.max_energy, target.energy + restore_amount)
              game.game_log.append(f"Жажда Развлечений дарует {target.nickname} {restore_amount} ПЭ!")
         
         # Jogo Passive (Burn)
-        if source_player.character and source_player.character.id == "jogo" and card_type == CardType.TECHNIQUE:
+        if source_player and source_player.character and source_player.character.id == "jogo" and card_type == CardType.TECHNIQUE:
             existing_burn = next((e for e in target.effects if e.name == EFFECT_ID_BURN), None)
             if existing_burn:
                 existing_burn.duration = 2
