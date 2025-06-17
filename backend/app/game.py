@@ -1,9 +1,12 @@
 import random
 from typing import Dict, List, Callable, Any
+from datetime import datetime, timedelta
+import asyncio
 
 from .models import Game, Lobby, Player, Card, GameState, Effect, PlayerStatus, CardType, Rarity, Character
 from .content import common_cards, characters
 from .exceptions import GameException
+from .websockets import broadcast
 
 # Effect IDs
 EFFECT_ID_SOUL_DISTORTION = "mahito_self_embodiment_of_perfection" # Махито РТ дебафф
@@ -59,10 +62,10 @@ class GameManager:
         player.energy = character.max_energy
         return lobby
     
-    def start_game(self, lobby: Lobby) -> Game:
+    async def start_game_and_watcher(self, lobby: Lobby) -> Game:
         game = self._create_game_from_lobby(lobby)
         self.games[game.game_id] = game
-        # The lobby is deleted in the LobbyManager now
+        asyncio.create_task(self.turn_timer_watcher(game.game_id))
         return game
 
     def play_card(self, game_id: str, player_id: str, card_id: str, target_id: str = None, targets_ids: list = None) -> Game:
@@ -171,6 +174,7 @@ class GameManager:
             player.hand.append(card_to_play.copy(deep=True))
 
         player.chant_active_for_turn = False
+        game.turn_start_time = datetime.utcnow()
         return game
 
     def end_turn(self, game_id: str, player_id: str) -> Game:
@@ -208,6 +212,7 @@ class GameManager:
         game.current_turn_player_index = next_turn_index
         new_current_player = game.players[game.current_turn_player_index]
         self._process_start_of_turn_effects(game, new_current_player)
+        game.turn_start_time = datetime.utcnow()
 
         return game
 
@@ -357,6 +362,7 @@ class GameManager:
                 self._draw_cards(p, max_hand)
         
         game.game_log.append("--- Игра начинается! ---")
+        game.turn_start_time = datetime.utcnow()
         return game
 
     def _build_deck_for_player(self, player: Player):
@@ -997,5 +1003,48 @@ class GameManager:
         self._apply_effect(game, player, player, "mahito_polymorphic_soul_isomer", 2)
         game.game_log.append(f"{player.nickname} получает 500 блока от 'Полиморфной Изомерной Души'.")
         return game
+
+    async def turn_timer_watcher(self, game_id: str):
+        game = self.get_game(game_id)
+        if not game: return
+
+        while game.game_state == GameState.IN_PROGRESS:
+            await asyncio.sleep(5)
+            game = self.get_game(game_id)
+            if not game or game.game_state != GameState.IN_PROGRESS:
+                break
+
+            now = datetime.utcnow()
+            time_limit = timedelta(seconds=60)
+            
+            if game.turn_start_time and (now - game.turn_start_time) > time_limit:
+                player_to_kick = game.players[game.current_turn_player_index]
+                
+                if player_to_kick.status == PlayerStatus.ALIVE:
+                    game.game_log.append(f"{player_to_kick.nickname} был удален за бездействие.")
+                    self._defeat_player(game, player_to_kick)
+                    self._check_game_over(game)
+                    
+                    if game.game_state != GameState.FINISHED:
+                        current_turn_index = game.current_turn_player_index
+                        next_turn_index = (current_turn_index + 1) % len(game.players)
+
+                        while game.players[next_turn_index].status == PlayerStatus.DEFEATED:
+                            if next_turn_index == current_turn_index:
+                                self._check_game_over(game)
+                                break
+                            next_turn_index = (next_turn_index + 1) % len(game.players)
+                        
+                        if game.game_state != GameState.FINISHED:
+                            if next_turn_index <= current_turn_index:
+                                self._start_new_round(game)
+                            
+                            game.current_turn_player_index = next_turn_index
+                            new_current_player = game.players[game.current_turn_player_index]
+                            self._process_start_of_turn_effects(game, new_current_player)
+                            game.turn_start_time = datetime.utcnow()
+
+                    await broadcast(game.game_id, {"type": "game_state", "payload": game.dict()})
+        print(f"Watcher for game {game_id} finished.")
 
 game_manager = GameManager()

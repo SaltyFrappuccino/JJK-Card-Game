@@ -67,5 +67,17 @@ export interface GameState {
 }
 
 export interface Game {
+  game_id: string;
+  players: Player[];
+  current_turn_player_index: number;
+  game_state: 'IN_PROGRESS' | 'FINISHED';
+  game_log: string[];
+  round_number: number;
+  is_training: boolean;
+  turn_start_time?: string;
+}
+
+export interface Lobby {
+  id: string;
   // ... existing code ...
 } 

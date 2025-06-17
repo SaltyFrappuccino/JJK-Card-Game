@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import { useWS } from '../hooks/useSocket';
@@ -23,6 +23,7 @@ const GamePage: React.FC = () => {
   const [discardMode, setDiscardMode] = useState(false);
   const [discardSelection, setDiscardSelection] = useState<CardType[]>([]);
   const [multiTargetSelection, setMultiTargetSelection] = useState<string[]>([]);
+  const [timeLeft, setTimeLeft] = useState(60);
 
   const multiTargetCount = useMemo(() => selectedCard ? getMultiTargetCount(selectedCard) : null, [selectedCard]);
   const currentPlayer = useMemo(() => game ? game.players[game.current_turn_player_index] : null, [game]);
@@ -126,6 +127,28 @@ const GamePage: React.FC = () => {
     setDiscardSelection([]);
   };
 
+  useEffect(() => {
+    if (!game?.turn_start_time) {
+        return;
+    }
+
+    const calculateTimeLeft = () => {
+        if (!game?.turn_start_time) return 60;
+        const startTime = new Date(game.turn_start_time + 'Z').getTime();
+        const now = new Date().getTime();
+        const diffSeconds = Math.round((now - startTime) / 1000);
+        return Math.max(0, 60 - diffSeconds);
+    };
+
+    setTimeLeft(calculateTimeLeft());
+
+    const interval = setInterval(() => {
+        setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [game?.turn_start_time, game?.current_turn_player_index]);
+
   if (!game || !selfPlayer) {
     return <div>Loading game... If you are stuck here, please return to the main menu. <button onClick={handleReturnToMenu}>Menu</button></div>;
   }
@@ -151,7 +174,10 @@ const GamePage: React.FC = () => {
 
   return (
     <div className="game-page">
-      <div className="turn-indicator">Ход: {currentPlayer?.nickname}</div>
+      <div className="turn-indicator">
+        Ход: {currentPlayer?.nickname}
+        <div className="turn-timer">(Осталось: {timeLeft}с)</div>
+      </div>
       {targeting && multiTargetCount && (
         <div className="targeting-indicator">
             Выберите целей: {multiTargetSelection.length} / {multiTargetCount}

@@ -98,11 +98,25 @@
 
 .turn-indicator {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    background: var(--panel-color);
-    padding: 6px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-weight: bold;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0,0,0,0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 15px;
+    z-index: 100;
+    font-size: 1.4em;
+    text-align: center;
+}
+
+.turn-timer {
+    font-size: 0.8em;
+    color: #ccc;
+    margin-top: 5px;
+}
+
+.targeting-indicator {
+    position: absolute;
+    top: 90px;
 } 

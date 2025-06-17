@@ -1,6 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from enum import Enum
+from datetime import datetime
 
 class Rarity(str, Enum):
     COMMON = "Обычная"
@@ -98,3 +99,4 @@ class Game(BaseModel):
     active_domain: Optional[Card] = None
     game_log: List[str] = []
     is_training: bool = False
+    turn_start_time: datetime | None = None

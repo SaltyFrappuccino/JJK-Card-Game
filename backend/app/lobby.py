@@ -81,7 +81,7 @@ class LobbyManager:
             if any(p.character is None for p in lobby.players):
                 raise LobbyException("Не все игроки выбрали персонажа.")
             
-        game = game_manager.start_game(lobby)
+        game = await game_manager.start_game_and_watcher(lobby)
         
         # Notify all players in the lobby that the game is starting
         await broadcast(lobby_id, {"type": "game_state", "payload": game.dict()})

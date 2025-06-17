@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { Game, Lobby, Player } from '../types';
 import type { GameState, LobbyInfo } from '../types';
 
 interface PlayerState {

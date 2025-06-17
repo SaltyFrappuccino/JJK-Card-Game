@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
-
-from .models import Card, Character
+from .models import Card, Character, Rarity, CardType, PlayerStatus, GameState
+from datetime import datetime
 
 # --- Schemas for Player and Lobby Management ---
 
@@ -12,6 +12,11 @@ class PlayerInfo(BaseModel):
     id: str
     nickname: str
     character: Optional[Character] = None
+    game_state: GameState
+    game_log: list[str]
+    round_number: int
+    is_training: bool
+    turn_start_time: datetime | None = None
 
     class Config:
         orm_mode = True
