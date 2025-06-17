@@ -176,4 +176,14 @@ button:hover {
     left: 100%;
     top: 50%;
     transform: translateY(-50%);
+}
+
+.souls-indicator {
+    background: #8e44ad;
+    color: #fff;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-bottom: 5px;
+    text-align: center;
+    font-size: 0.8rem;
 } 

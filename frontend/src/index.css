@@ -139,3 +139,56 @@ button:focus-visible {
 .name-blue {color:#00aaff;text-shadow:0 0 5px #00aaff,0 0 10px #00aaff;}
 .name-red {color:#ff4b4b;text-shadow:0 0 5px #ff4b4b,0 0 10px #ff4b4b;}
 .name-purple {color:#c770ff;text-shadow:0 0 5px #c770ff,0 0 10px #c770ff;}
+
+.card-name-fire {
+  position: relative;
+  color: #ffb400;
+  animation: flameColor 1s infinite alternate;
+}
+
+.card-name-fire::before,
+.card-name-fire::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+.card-name-fire::before {
+  color: #ff5500;
+  filter: blur(3px);
+  opacity: 0.8;
+  animation: flameFlicker 0.6s infinite ease-in-out;
+}
+
+.card-name-fire::after {
+  color: #ffe700;
+  filter: blur(5px);
+  opacity: 0.5;
+  animation: flameFlicker 0.6s infinite ease-in-out reverse;
+}
+
+@keyframes flameColor {
+  0% {
+    color: #ffbd00;
+  }
+  50% {
+    color: #ff9400;
+  }
+  100% {
+    color: #ffbd00;
+  }
+}
+
+@keyframes flameFlicker {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

@@ -32,10 +32,9 @@ export type PlayerStatus = 'ALIVE' | 'DEFEATED';
 export interface Player {
   id: string;
   nickname: string;
-  character?: Character;
-  hp?: number;
-  max_hp?: number;
-  energy?: number;
+  character: Character | null;
+  hp: number | null;
+  energy: number | null;
   block: number;
   hand: Card[];
   deck: Card[];
@@ -43,6 +42,8 @@ export interface Player {
   effects: Effect[];
   status: PlayerStatus;
   last_discard_round: number;
+  max_hp?: number;
+  distorted_souls?: number;
 }
 
 export interface LobbyInfo {
@@ -63,4 +64,8 @@ export interface GameState {
   active_domain?: Card;
   game_log: string[];
   is_training: boolean;
+}
+
+export interface Game {
+  // ... existing code ...
 } 

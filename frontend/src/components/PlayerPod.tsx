@@ -60,6 +60,11 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
         </div>
       </div>
       {player.block > 0 && <div className="block-indicator">Block: {player.block}</div>}
+      {player.character?.id === 'mahito' && (
+        <div className="souls-indicator">
+          Искажённые души: {player.distorted_souls ?? 0}
+        </div>
+      )}
       <div className="effects">
         {player.effects.map((effect, index) => {
           const abbreviation = effect.name.split(' ').map(word => word[0]).join('').toUpperCase();

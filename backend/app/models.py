@@ -68,8 +68,11 @@ class Player(BaseModel):
     ignore_block_attacks_count: int = 0
     # For chant effect
     chant_active_for_turn: bool = False
-    # Gojo's cost modifier
-    cost_modifier: float = 1.0
+    # Gojo's state for cost reduction
+    cost_modifier: float = 0.9  # Initial 10% discount
+    is_blindfolded: bool = True
+    # Mahito's resources
+    distorted_souls: int = 0
 
 class Lobby(BaseModel):
     id: str

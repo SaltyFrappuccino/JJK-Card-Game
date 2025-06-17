@@ -65,6 +65,7 @@ export const Card: React.FC<CardProps> = ({ card, isPlayable, onClick, index = 0
   const z = isSelected ? 150 : index;
 
   const nameCss = SPECIAL_NAME_STYLES[card.name] ?? '';
+  const isKamino = card.id === 'sukuna_kamino';
 
   return (
     <motion.div
@@ -77,7 +78,7 @@ export const Card: React.FC<CardProps> = ({ card, isPlayable, onClick, index = 0
     >
       <div className="card-image">Image</div>
       <div className="card-header">
-        <span className={clsx('card-name', nameCss)}>{card.name}</span>
+        <span className={clsx('card-name', nameCss, { 'card-name-fire': isKamino })} data-text={card.name}>{card.name}</span>
         <span className="card-cost">{card.cost}</span>
       </div>
       <div className="card-body">
