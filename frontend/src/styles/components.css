@@ -130,21 +130,28 @@
 
 .player-portrait {
     position: absolute;
-    width: 100%;
-    max-height: 150%;
-    left: 50%;
-    transform: translateX(-50%);
+    width: auto;
+    max-height: 160%;
+    right: -20px;
     bottom: 0;
     z-index: 0;
-    pointer-events: none;
+    pointer-events: all;
     filter: drop-shadow(0px -5px 8px rgba(0, 0, 0, 0.9));
     object-fit: contain;
     object-position: bottom;
 }
 
 .player-pod.self-player .player-portrait {
-    max-height: 160%;
-    bottom: -5px;
+    max-height: 175%;
+    right: -30px;
+}
+
+.nickname, .character-name {
+    text-shadow: 
+        -1px -1px 0 #000,  
+         1px -1px 0 #000,
+        -1px  1px 0 #000,
+         1px  1px 0 #000;
 }
 
 .player-pod.current-player {

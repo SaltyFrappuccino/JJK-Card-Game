@@ -48,20 +48,19 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
       onContextMenu={(event) => onSelect && isTargetable && player.status !== 'DEFEATED' && onSelect(player.id, event)}
     >
       {fullCharacterData && portraitSrc && (
-        <img src={portraitSrc} alt={fullCharacterData.name} className="player-portrait" />
+        <img 
+          src={portraitSrc} 
+          alt={fullCharacterData.name} 
+          className="player-portrait"
+          data-tooltip-id={`passive-tooltip-${player.id}`}
+          data-tooltip-html={`<strong>${fullCharacterData.passive_ability_name}</strong><br />${fullCharacterData.passive_ability_description}`}
+        />
       )}
+      {fullCharacterData && <Tooltip id={`passive-tooltip-${player.id}`} />}
+
       <div className="player-info">
         <span className="nickname">{player.nickname}</span>
         <span className="character-name">{player.character?.name}</span>
-        {player.character && (
-          <div className="passive-info tooltip-container">
-            <span className="info-icon">ℹ️</span>
-            <div className="tooltip-content">
-              <strong>{player.character.passive_ability_name}</strong>
-              <p>{player.character.passive_ability_description}</p>
-            </div>
-          </div>
-        )}
       </div>
       <div className="status-bars">
         <div className="hp-bar">
