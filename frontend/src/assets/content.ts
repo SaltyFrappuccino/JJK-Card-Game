@@ -1,4 +1,11 @@
 import type { Character } from '../types';
+import gojoPortrait from './portraits/Satoru Gojo portrait.png';
+import gojoBlindfoldedPortrait from './portraits/Satoru Gojo blind portrait.png';
+import sukunaPortrait from './portraits/Sukuna Portrait.png';
+import mahitoPortrait from './portraits/Mahito portrait.png';
+import itadoriPortrait from './portraits/Itadori Yuji portrait.png';
+import jogoPortrait from './portraits/Jogo portrait.png';
+import yutaPortrait from './portraits/Yuta Okkotsu Portrait.png';
 
 // IMPORTANT: ID's must be manually synchronized with backend/app/content.py
 
@@ -8,6 +15,8 @@ export const ALL_CHARACTERS: Character[] = [
     name: 'Сатору Годзё',
     max_hp: 5500,
     max_energy: 75000,
+    portrait: gojoPortrait,
+    portrait_blindfolded: gojoBlindfoldedPortrait,
     passive_ability_name: 'Шесть глаз и Бесконечность',
     passive_ability_description: 'Постоянно: вы видите точное количество ПЭ всех игроков, ваша максимальная рука увеличена до 6 карт. В начале игры вы получаете эффект "Повязка", который можно снять картой "Снять Повязку". После снятия "Повязки" в начале каждого вашего раунда стоимость всех ваших карт снижается на 5% от базовой, эффект накапливается до -90%.',
     unique_cards: [
@@ -74,6 +83,7 @@ export const ALL_CHARACTERS: Character[] = [
     name: 'Рёмен Сукуна',
     max_hp: 7000,
     max_energy: 100000,
+    portrait: sukunaPortrait,
     passive_ability_name: 'Жажда Развлечений',
     passive_ability_description: 'Если вам наносит урон противник, чей текущий % ХП больше, чем ваш, вы немедленно восстанавливаете 5% от вашего максимального запаса ПЭ (5000 ПЭ).',
     unique_cards: [
@@ -89,6 +99,7 @@ export const ALL_CHARACTERS: Character[] = [
     name: 'Махито',
     max_hp: 4000,
     max_energy: 50000,
+    portrait: mahitoPortrait,
     passive_ability_name: 'Праздная Трансфигурация',
     passive_ability_description: "Карта 'Удар' наносит вам 0 урона. Вы начинаете игру с 0 Искажённых Душ. Каждые 2 своих хода вы гарантированно получаете карту 'Касание Души' в руку.",
     unique_cards: [
@@ -112,6 +123,7 @@ export const ALL_CHARACTERS: Character[] = [
     name: 'Юдзи Итадори',
     max_hp: 7500,
     max_energy: 40000,
+    portrait: itadoriPortrait,
     passive_ability_name: 'Сверхчеловеческая Сила',
     passive_ability_description: "Ваши 'Удары' наносят +150 урона. Каждый раз, когда вы играете карту 'Удар', вы восстанавливаете 1000 ПЭ. Ваш базовый шанс 'Чёрной Вспышки' равен 2/6. Когда на вас есть эффект \"Зона\", ваш шанс становится 3/6.",
     unique_cards: [
@@ -126,6 +138,7 @@ export const ALL_CHARACTERS: Character[] = [
     name: 'Дзёго',
     max_hp: 5000,
     max_energy: 65000,
+    portrait: jogoPortrait,
     passive_ability_name: 'Прикосновение Лавы',
     passive_ability_description: "Каждый раз, когда вы наносите урон картой Техники, цель получает эффект 'Горение' на 2 раунда (100 урона в начале её хода).",
     unique_cards: [
@@ -140,6 +153,7 @@ export const ALL_CHARACTERS: Character[] = [
     name: 'Юта Оккоцу',
     max_hp: 6000,
     max_energy: 85000,
+    portrait: yutaPortrait,
     passive_ability_name: 'Копирование и Рика',
     passive_ability_description: 'Когда противник наносит вам урон картой Техники, копия этой карты добавляется в ваш сброс (стоимость х1.25). Дополнительно, в конце вашего хода Рика наносит 250 урона случайному противнику.',
     unique_cards: [

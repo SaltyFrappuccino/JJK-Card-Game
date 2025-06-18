@@ -111,16 +111,40 @@
 
 /* PlayerPod Component */
 .player-pod {
-    width: 220px;
     padding: 10px;
-    background: var(--panel-color);
-    border: 2px solid var(--border-color);
     border-radius: 8px;
-    transition: all 0.3s ease;
+    background: rgba(40, 40, 60, 0.8);
+    border: 1px solid #4a4a8a;
+    width: 220px;
+    min-height: 100px;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    overflow: visible;
+    z-index: 1;
 }
 
 .player-pod.self-player {
-    width: 260px;
+    width: 280px;
+    min-height: 120px;
+}
+
+.player-portrait {
+    position: absolute;
+    width: 100%;
+    max-height: 150%;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+    filter: drop-shadow(0px -5px 8px rgba(0, 0, 0, 0.9));
+    object-fit: contain;
+    object-position: bottom;
+}
+
+.player-pod.self-player .player-portrait {
+    max-height: 160%;
+    bottom: -5px;
 }
 
 .player-pod.current-player {
@@ -134,12 +158,28 @@
 }
 
 .player-pod.defeated {
-    opacity: 0.4;
+    opacity: 0.5;
     filter: grayscale(1);
 }
 
-.player-info { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; align-items: center; }
-.status-bars { display: flex; flex-direction: column; gap: 5px; margin-bottom: 5px; }
+.player-info {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 10px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.status-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 5px;
+    position: relative;
+    z-index: 1;
+}
 
 .hp-bar, .energy-bar {
     width: 100%;
@@ -149,13 +189,57 @@
     position: relative;
     overflow: hidden;
 }
-.hp-fill { background-color: #e74c3c; height: 100%; }
-.energy-fill { background-color: #3498db; height: 100%; }
-.hp-text, .energy-text { position: absolute; left: 5px; top: 1px; font-size: 0.8rem; }
 
-.block-indicator { background: #95a5a6; color: #111; padding: 2px 5px; border-radius: 3px; margin-bottom: 5px; text-align: center; }
-.effects { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
-.effect-icon { width: 20px; height: 20px; background: #9b59b6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; border: 1px solid #fff; color: #fff; }
+.hp-fill {
+    background-color: #e74c3c;
+    height: 100%;
+}
+
+.energy-fill {
+    background-color: #3498db;
+    height: 100%;
+}
+
+.hp-text, .energy-text {
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    font-size: 0.8rem;
+}
+
+.block-indicator {
+    background: #95a5a6;
+    color: #111;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-bottom: 5px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.effects {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-top: 5px;
+    position: relative;
+    z-index: 1;
+}
+
+.effect-icon {
+    width: 20px;
+    height: 20px;
+    background: #9b59b6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border: 1px solid #fff;
+    color: #fff;
+}
 
 .effect-icon--positive {
     box-shadow: 0 0 5px #ADFF2F, 0 0 10px #ADFF2F, 0 0 15px #ADFF2F;
@@ -180,14 +264,19 @@
 .end-turn-button {
     width: 100%;
     margin-top: 8px;
+    position: relative;
+    z-index: 1;
 }
 
-.passive-info { position: relative; }
+.passive-info {
+    position: relative;
+}
 
 /* кнопки с новыми цветами */
 button {
     background-color: var(--accent-color-1);
 }
+
 button:hover {
     background-color: var(--electric-blue-light);
 }
@@ -208,4 +297,11 @@ button:hover {
     margin-bottom: 5px;
     text-align: center;
     font-size: 0.8rem;
+    position: relative;
+    z-index: 1;
+}
+
+.remove-dummy-btn {
+    position: relative;
+    z-index: 1;
 } 

@@ -17,6 +17,8 @@ export interface Character {
   passive_ability_name: string;
   passive_ability_description: string;
   unique_cards: Card[];
+  portrait: string;
+  portrait_blindfolded?: string;
 }
 
 export interface Effect {
@@ -45,6 +47,7 @@ export interface Player {
   last_discard_round: number;
   max_hp?: number;
   distorted_souls?: number;
+  is_blindfolded?: boolean;
 }
 
 export interface LobbyInfo {

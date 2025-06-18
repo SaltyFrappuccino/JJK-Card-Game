@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { effectsInfo } from '../assets/effectsInfo';
 import { Tooltip } from 'react-tooltip'
 import 'react-tooltip/dist/react-tooltip.css'
+import { ALL_CHARACTERS } from '../assets/content';
 
 interface PlayerPodProps {
   player: Player;
@@ -19,12 +20,20 @@ interface PlayerPodProps {
 }
 
 const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, onSelect, isSelf = false, onEndTurn, viewerIsGojo = false, isTraining = false, onRemoveDummy, style }) => {
+  const fullCharacterData = player.character ? ALL_CHARACTERS.find(c => c.id === player.character!.id) : null;
+
   const maxHp = player.character?.max_hp || player.max_hp || 1;
   const hpPercent = player.hp ? (player.hp / maxHp) * 100 : 0;
   
   const canSeeEnergy = isSelf || viewerIsGojo;
   const maxEnergy = player.character?.max_energy || 1;
   const energyPercent = canSeeEnergy && player.energy ? (player.energy / maxEnergy) * 100 : 100;
+
+  const isBlindfolded = player.effects.some(e => e.name === 'gojo_blindfold');
+  
+  const portraitSrc = isBlindfolded
+    ? fullCharacterData?.portrait_blindfolded
+    : fullCharacterData?.portrait;
 
   return (
     <div
@@ -38,6 +47,9 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
       onClick={(event) => onSelect && isTargetable && player.status !== 'DEFEATED' && onSelect(player.id, event)}
       onContextMenu={(event) => onSelect && isTargetable && player.status !== 'DEFEATED' && onSelect(player.id, event)}
     >
+      {fullCharacterData && portraitSrc && (
+        <img src={portraitSrc} alt={fullCharacterData.name} className="player-portrait" />
+      )}
       <div className="player-info">
         <span className="nickname">{player.nickname}</span>
         <span className="character-name">{player.character?.name}</span>
