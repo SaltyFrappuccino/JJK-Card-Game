@@ -6,7 +6,7 @@ common_cards = [
     Card(
         id="common_strike",
         name="Удар",
-        type=CardType.TECHNIQUE,
+        type=CardType.ACTION,
         rarity=Rarity.COMMON,
         cost=0,
         description="Наносит 300 урона."
@@ -62,7 +62,7 @@ common_cards = [
     Card(
         id="common_black_flash",
         name="Чёрная Вспышка",
-        type=CardType.TECHNIQUE,
+        type=CardType.ACTION,
         rarity=Rarity.EPIC,
         cost=0,
         description="С шансом 1 к 6 наносит 2500 урона вместо 100. Юдзи имеет шанс 2 к 6. При успехе накладывает на вас эффект \"Зона\" на 3 хода. Некоторые эффекты могут гарантировать успех."
