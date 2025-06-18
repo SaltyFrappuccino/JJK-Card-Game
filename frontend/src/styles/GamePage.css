@@ -13,19 +13,17 @@
 
 .game-board {
     grid-area: board;
+    flex-grow: 1;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     position: relative;
 }
 
 .player-pods-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    /* Basic circular layout - can be improved with JS */
-    flex-wrap: wrap; 
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 .game-log {

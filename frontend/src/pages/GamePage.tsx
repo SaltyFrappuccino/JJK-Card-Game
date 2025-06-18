@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import { useWS } from '../hooks/useSocket';
@@ -11,6 +11,33 @@ const getMultiTargetCount = (card: CardType): number | null => {
     return 3;
   }
   return null;
+};
+
+const getOpponentStyle = (index: number, totalOpponents: number): React.CSSProperties => {
+  if (totalOpponents === 0) return {};
+
+  const angleSpan = totalOpponents > 1 ? 170 : 0; // Even wider arc
+  const hRadius = 55; // Increased horizontal radius for more space
+  const vRadius = 30; // Keep the vertical radius as is
+
+  const angle = totalOpponents > 1 
+    ? -angleSpan / 2 + index * (angleSpan / (totalOpponents - 1))
+    : 0;
+  
+  const cssAngle = (angle - 90) * (Math.PI / 180);
+
+  const topOffset = vRadius * Math.sin(cssAngle);
+  const leftOffset = hRadius * Math.cos(cssAngle);
+
+  const style: React.CSSProperties = {
+    position: 'absolute',
+    // Keep the vertical center of the ellipse
+    top: `calc(75% + ${topOffset}vmin)`, 
+    left: `calc(50% + ${leftOffset}vmin)`,
+    transform: 'translate(-50%, -50%)',
+  };
+
+  return style;
 };
 
 const GamePage: React.FC = () => {
@@ -172,10 +199,12 @@ const GamePage: React.FC = () => {
   
   const viewerIsGojo = selfPlayer?.character?.id === 'gojo_satoru';
 
-  // Reorder players so that selfPlayer is at the bottom center
-  const playerOrder = [...game.players];
-  const selfIndex = playerOrder.findIndex(p => p.id === selfPlayer.id);
-  const orderedPlayers = selfIndex !== -1 ? [...playerOrder.slice(selfIndex), ...playerOrder.slice(0, selfIndex)] : playerOrder;
+  const opponents = game.players.filter(p => p.id !== selfPlayer.id);
+
+  const selfIndex = game.players.findIndex(p => p.id === selfPlayer.id);
+  const orderedOpponents = selfIndex !== -1 
+    ? [...game.players.slice(selfIndex + 1), ...game.players.slice(0, selfIndex)]
+    : opponents;
 
   return (
     <div className="game-page">
@@ -192,9 +221,10 @@ const GamePage: React.FC = () => {
       )}
       <div className="game-board">
         <div className="player-pods-container">
-          {orderedPlayers.filter(p=> p.id !== selfPlayer.id).map(p => (
+          {orderedOpponents.map((p, index) => (
             <PlayerPod 
               key={p.id} 
+              style={getOpponentStyle(index, orderedOpponents.length)}
               player={p} 
               isCurrent={p.id === currentPlayer?.id}
               isTargetable={targeting}

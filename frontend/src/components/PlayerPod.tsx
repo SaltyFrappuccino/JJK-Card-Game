@@ -15,9 +15,10 @@ interface PlayerPodProps {
   viewerIsGojo?: boolean;
   isTraining?: boolean;
   onRemoveDummy?: (dummyId: string) => void;
+  style?: React.CSSProperties;
 }
 
-const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, onSelect, isSelf = false, onEndTurn, viewerIsGojo = false, isTraining = false, onRemoveDummy }) => {
+const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, onSelect, isSelf = false, onEndTurn, viewerIsGojo = false, isTraining = false, onRemoveDummy, style }) => {
   const maxHp = player.character?.max_hp || player.max_hp || 1;
   const hpPercent = player.hp ? (player.hp / maxHp) * 100 : 0;
   
@@ -27,6 +28,7 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
 
   return (
     <div
+      style={style}
       className={clsx('player-pod', {
         'current-player': isCurrent,
         'targetable': isTargetable,
