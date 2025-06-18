@@ -5,6 +5,7 @@ export interface Card {
   rarity: string;
   cost: number;
   description: string;
+  image?: string;
   source_player_id?: string;
   duration?: number;
 }

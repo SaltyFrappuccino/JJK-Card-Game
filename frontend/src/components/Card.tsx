@@ -2,6 +2,8 @@ import React from 'react';
 import type { Card as CardType } from '../types';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
+import { ALL_CARDS } from '../assets/content';
+import './../styles/components.css'
 
 interface CardProps {
   card: CardType;
@@ -19,7 +21,7 @@ const SPECIAL_NAME_STYLES: Record<string, string> = {
   'Мнимая техника: "Фиолетовый"': 'name-purple',
 };
 
-const cleanLabel = (text: string) => text.replace(/^\*\*/,'').trim();
+const cleanLabel = (text: string) => text.replace(/^\*\*/, '').trim();
 
 const prepareDescription = (description: string) => {
   let main = description;
@@ -40,23 +42,16 @@ const prepareDescription = (description: string) => {
     main = main.replace(synMatch[0], '').trim();
   }
 
+  main = main.replace(/<br\s*\/?>/gi, ' ');
+
   const parts: React.ReactNode[] = [];
   if (main) parts.push(<span key="main">{main}</span>);
   if (condition) parts.push(<span key="cond" className="card-condition">{condition}</span>);
   if (synergy) parts.push(<span key="syn" className="card-synergy">{synergy}</span>);
-  return parts;
+  return <>{parts}</>;
 };
 
-const rarityClass = (rarity: string) => {
-  switch (rarity) {
-    case 'Обычная': return 'rarity-common';
-    case 'Необычная': return 'rarity-uncommon';
-    case 'Редкая': return 'rarity-rare';
-    case 'Эпическая': return 'rarity-epic';
-    case 'Легендарная': return 'rarity-legendary';
-    default: return '';
-  }
-};
+const rarityClass = (rarity: string) => `rarity-${rarity.toLowerCase()}`;
 
 export const Card: React.FC<CardProps> = ({ card, isPlayable, onClick, index = 0, total = 1, isSelected = false, className }) => {
   const angle = (index - (total - 1) / 2) * 10;
@@ -67,6 +62,8 @@ export const Card: React.FC<CardProps> = ({ card, isPlayable, onClick, index = 0
   const nameCss = SPECIAL_NAME_STYLES[card.name] ?? '';
   const isKamino = card.id === 'sukuna_kamino';
 
+  const cardInfo = ALL_CARDS.find(c => c.id === card.id);
+
   return (
     <motion.div
       className={clsx('card', rarityClass(card.rarity), { 'is-playable': isPlayable, 'is-selected': isSelected }, className)}
@@ -76,7 +73,11 @@ export const Card: React.FC<CardProps> = ({ card, isPlayable, onClick, index = 0
       whileHover={{ scale: isSelected ? 1.3 : 1.2, y: isSelected ? -90 : -30, rotate: 0, zIndex: 200 }}
       onClick={onClick}
     >
-      <div className="card-image">Image</div>
+      {cardInfo?.image && (
+        <div className="card-image-container">
+          <img src={cardInfo.image} alt={card.name} className="card-image" />
+        </div>
+      )}
       <div className="card-header">
         <span className={clsx('card-name', nameCss, { 'card-name-fire': isKamino })} data-text={card.name}>{card.name}</span>
         <span className="card-cost">{card.cost}</span>

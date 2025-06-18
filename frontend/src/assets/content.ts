@@ -1,4 +1,4 @@
-import type { Character } from '../types';
+import type { Character, Card } from '../types';
 import gojoPortrait from './portraits/Satoru Gojo portrait.png';
 import gojoBlindfoldedPortrait from './portraits/Satoru Gojo blind portrait.png';
 import sukunaPortrait from './portraits/Sukuna Portrait.png';
@@ -7,7 +7,35 @@ import itadoriPortrait from './portraits/Itadori Yuji portrait.png';
 import jogoPortrait from './portraits/Jogo portrait.png';
 import yutaPortrait from './portraits/Yuta Okkotsu Portrait.png';
 
+// Card Images
+// Basic
+import attackImg from './cards/basic cards/Attack.jpg';
+import shieldImg from './cards/basic cards/Shield.jpg';
+
+// Gojo
+import gojoBlueImg from './cards/satoru/Blue.jpg';
+import gojoRedImg from './cards/satoru/Reversal Red.jpg';
+import gojoPurpleImg from './cards/satoru/Hollow Purple.jpg';
+import gojoNoBlindfoldImg from './cards/satoru/no blindfold.jpg';
+import gojoDomainImg from './cards/satoru/Unlimited Void Domain Expansion.jpg';
+
+// Sukuna
+import sukunaCleaveImg from './cards/sukuna/Cleave.jpg';
+import sukunaDismantleImg from './cards/sukuna/Dismantle.jpg';
+import sukunaWebImg from './cards/sukuna/Cleave Web.jpg';
+import sukunaFuugaImg from './cards/sukuna/Kamino Fuuga.jpg';
+import sukunaDomainImg from './cards/sukuna/Malevolent Shrine Domain Expansion.jpg';
+
 // IMPORTANT: ID's must be manually synchronized with backend/app/content.py
+
+export const COMMON_CARDS: Card[] = [
+  { id: 'common_strike', name: 'Удар', type: 'ACTION', rarity: 'COMMON', cost: 0, description: 'Наносит 300 урона одной цели.', image: attackImg },
+  { id: 'common_shield', name: 'Защита', type: 'ACTION', rarity: 'COMMON', cost: 0, description: 'Вы получаете 300 блока на этот раунд.', image: shieldImg },
+  { id: 'common_concentration', name: 'Концентрация', type: 'ACTION', rarity: 'COMMON', cost: 0, description: 'Вы восстанавливаете от 5 до 15% вашего ПЭ.'},
+  { id: 'common_simple_domain', name: 'Простая Территория', type: 'TECHNIQUE', rarity: 'RARE', cost: 5000, description: 'Защищает вас от урона вражеской территории на 1 раунд.'},
+  { id: 'common_black_flash_check', name: 'Чёрная Вспышка (Проверка)', type: 'ACTION', rarity: 'SPECIAL', cost: 0, description: "Проверка шанса на 'Чёрную Вспышку'. Базовый шанс: 1/6. При успехе вы берёте карту 'Чёрная Вспышка' в руку." },
+  { id: 'common_black_flash', name: 'Чёрная Вспышка', type: 'TECHNIQUE', rarity: 'SPECIAL', cost: 20000, description: "Наносит урон, в 2.5 раза превышающий ваш обычный 'Удар'. Этот урон игнорирует блок. Если вы находитесь под эффектом 'Концентрация', ваш следующий 'Удар' будет заменён на 'Чёрную Вспышку' со 100% шансом."},
+];
 
 export const ALL_CHARACTERS: Character[] = [
   {
@@ -26,7 +54,8 @@ export const ALL_CHARACTERS: Character[] = [
         type: 'TECHNIQUE',
         rarity: 'LEGENDARY',
         cost: 0,
-        description: "Снимает с вас эффект \"Повязка\".\nУсловие: ваше текущее ХП должно быть меньше или равно 33% от максимального."
+        description: "Снимает с вас эффект \"Повязка\".\nУсловие: ваше текущее ХП должно быть меньше или равно 33% от максимального.",
+        image: gojoNoBlindfoldImg
       },
       {
         id: "gojo_strengthened_strike",
@@ -50,7 +79,8 @@ export const ALL_CHARACTERS: Character[] = [
         type: 'TECHNIQUE',
         rarity: 'RARE',
         cost: 10000,
-        description: 'Наносит 1000 урона 2-м случайным противникам. Активирует условие для "Фиолетового".'
+        description: 'Наносит 1000 урона 2-м случайным противникам. Активирует условие для "Фиолетового".',
+        image: gojoBlueImg
       },
       {
         id: "gojo_red",
@@ -58,7 +88,8 @@ export const ALL_CHARACTERS: Character[] = [
         type: 'TECHNIQUE',
         rarity: 'RARE',
         cost: 12000,
-        description: 'Наносит 1200 урона основной цели и 600 урона игроку справа от неё. Активирует условие для "Фиолетового".'
+        description: 'Наносит 1200 урона основной цели и 600 урона игроку справа от неё. Активирует условие для "Фиолетового".',
+        image: gojoRedImg
       },
       {
         id: "gojo_purple",
@@ -66,7 +97,8 @@ export const ALL_CHARACTERS: Character[] = [
         type: 'TECHNIQUE',
         rarity: 'EPIC',
         cost: 30000,
-        description: 'Наносит 4000 урона одной цели. Этот урон игнорирует блок. \n Условие: ранее в игре должны быть использованы "Синий" и "Красный".'
+        description: 'Наносит 4000 урона одной цели. Этот урон игнорирует блок. \n Условие: ранее в игре должны быть использованы "Синий" и "Красный".',
+        image: gojoPurpleImg
       },
       {
         id: "gojo_unlimited_void",
@@ -74,7 +106,8 @@ export const ALL_CHARACTERS: Character[] = [
         type: 'DOMAIN_EXPANSION',
         rarity: 'LEGENDARY',
         cost: 50000,
-        description: "Все противники получают эффект 'Информационная перегрузка' на 3 раунда (не могут использовать карты Техник, Эпические и Легендарные)."
+        description: "Все противники получают эффект 'Информационная перегрузка' на 3 раунда (не могут использовать карты Техник, Эпические и Легендарные).",
+        image: gojoDomainImg
       },
     ]
   },
@@ -87,11 +120,11 @@ export const ALL_CHARACTERS: Character[] = [
     passive_ability_name: 'Жажда Развлечений',
     passive_ability_description: 'Если вам наносит урон противник, чей текущий % ХП больше, чем ваш, вы немедленно восстанавливаете 5% от вашего максимального запаса ПЭ (5000 ПЭ).',
     unique_cards: [
-      { id: "sukuna_cleave", name: 'Разрез', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 4000, description: 'Наносит 600 урона основной цели и 300 урона игроку слева от неё.' },
-      { id: "sukuna_dismantle", name: 'Расщепление', type: 'TECHNIQUE', rarity: 'RARE', cost: 16000, description: 'Наносит 1600 урона одной цели.' },
-      { id: "sukuna_spiderweb", name: 'Расщепление: Паутина', type: 'TECHNIQUE', rarity: 'RARE', cost: 18000, description: 'Наносит 1000 урона основной цели и по 500 урона игрокам слева и справа от неё.'},
-      { id: "sukuna_kamino", name: 'Камино (Пламенная стрела)', type: 'TECHNIQUE', rarity: 'EPIC', cost: 20000, description: "Наносит 1800 урона. Если атака убивает цель, вы восстанавливаете 10 000 ПЭ.\nСинергия: если активна 'Гробница Зла', наносит 1200 урона всем." },
-      { id: "sukuna_malevolent_shrine", name: 'Расширение Территории: Гробница Зла', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 40000, description: "Накладывает на всех оппонентов эффект, который в конце их хода наносит им 1500 урона. Длится 3 раунда. Урон игнорируется, если у цели активна 'Простая Территория'." },
+      { id: "sukuna_cleave", name: 'Разрез', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 4000, description: 'Наносит 600 урона основной цели и 300 урона игроку слева от неё.', image: sukunaCleaveImg },
+      { id: "sukuna_dismantle", name: 'Расщепление', type: 'TECHNIQUE', rarity: 'RARE', cost: 16000, description: 'Наносит 1600 урона одной цели.', image: sukunaDismantleImg },
+      { id: 'sukuna_cleave_web', name: 'Расщепление: Паутина', type: 'TECHNIQUE', rarity: 'RARE', cost: 18000, description: 'Наносит 1000 урона основной цели и по 500 урона игрокам слева и справа от неё.', image: sukunaWebImg },
+      { id: "sukuna_kamino", name: 'Камино (Пламенная стрела)', type: 'TECHNIQUE', rarity: 'EPIC', cost: 20000, description: "Наносит 1800 урона. Если атака убивает цель, вы восстанавливаете 10 000 ПЭ.\\nСинергия: если активна 'Гробница Зла', наносит 1200 урона всем.", image: sukunaFuugaImg },
+      { id: "sukuna_malevolent_shrine", name: 'Расширение Территории: Гробница Зла', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 40000, description: "Накладывает на всех оппонентов эффект, который в конце их хода наносит им 1500 урона. Длится 3 раунда. Урон игнорируется, если у цели активна 'Простая Территория'.", image: sukunaDomainImg },
     ]
   },
   {
@@ -163,4 +196,8 @@ export const ALL_CHARACTERS: Character[] = [
       { id: "yuta_true_mutual_love", name: 'Расширение Территории: Истинная и Взаимная Любовь', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 45000, description: 'На 3 раунда стоимость всех скопированных карт техник в вашей руке и колоде делится на 4 (округляется вверх). Ваша максимальная рука увеличивается до 8 карт.' },
     ]
   },
-]; 
+];
+
+export const ALL_CARDS = ALL_CHARACTERS.reduce((acc, character) => {
+  return acc.concat(character.unique_cards);
+}, [] as Card[]).concat(COMMON_CARDS); 
