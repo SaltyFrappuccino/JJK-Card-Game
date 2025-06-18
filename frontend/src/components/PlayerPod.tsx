@@ -68,21 +68,35 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
       <div className="effects">
         {player.effects.map((effect, index) => {
           const abbreviation = effect.name.split(' ').map(word => word[0]).join('').toUpperCase();
-          const description = effectsInfo[effect.name as keyof typeof effectsInfo] || 'Нет описания';
-          const fullDescription = `${description} (Осталось ходов: ${effect.duration})`;
+          const effectInfo = effectsInfo[effect.name as keyof typeof effectsInfo];
+          
+          const tooltipContent = effectInfo 
+            ? `<strong>${effectInfo.title}</strong><br />${effectInfo.description}<br />(Осталось ходов: ${effect.duration})` 
+            : `Нет описания<br />(Осталось ходов: ${effect.duration})`;
+
           const tooltipId = `tooltip-${player.id}-${effect.name.replace(/[^a-zA-Z0-9]/g, '')}-${index}`;
+          
+          const effectClassName = clsx('effect-icon', {
+            'effect-icon--positive': effectInfo?.type === 'POSITIVE',
+            'effect-icon--negative': effectInfo?.type === 'NEGATIVE',
+          });
+
+          const tooltipClassName = clsx({
+            'tooltip-positive': effectInfo?.type === 'POSITIVE',
+            'tooltip-negative': effectInfo?.type === 'NEGATIVE',
+          });
 
           return (
             <div key={index} className="effect-icon-container">
               <div 
-                className="effect-icon"
+                className={effectClassName}
                 data-tooltip-id={tooltipId}
-                data-tooltip-content={fullDescription}
+                data-tooltip-html={tooltipContent}
                 data-tooltip-place="top"
               >
                 {abbreviation}
               </div>
-              <Tooltip id={tooltipId} />
+              <Tooltip id={tooltipId} html={tooltipContent} className={tooltipClassName} />
             </div>
           );
         })}

@@ -22,6 +22,7 @@ export interface Character {
 export interface Effect {
   name: string;
   duration: number;
+  type: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';
   value?: number;
   source_player_id: string;
   target_id?: string;

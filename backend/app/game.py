@@ -1,7 +1,7 @@
 import random
 from typing import Dict, List, Callable, Any
 
-from .models import Game, Lobby, Player, Card, GameState, Effect, PlayerStatus, CardType, Rarity, Character
+from .models import Game, Lobby, Player, Card, GameState, Effect, PlayerStatus, CardType, Rarity, Character, EffectType
 from .content import common_cards, characters
 from .exceptions import GameException
 
@@ -11,6 +11,32 @@ EFFECT_ID_UNLIMITED_VOID = "gojo_unlimited_void" # свГодзё РТ деба�
 EFFECT_ID_DIVERGENT_FIST_DOT = "itadori_divergent_fist_dot"
 EFFECT_ID_BURN = "jogo_burn"
 EFFECT_ID_FREE_STRIKE = "free_strike_effect"
+
+effect_types = {
+    "common_chant": EffectType.POSITIVE,
+    "common_simple_domain": EffectType.POSITIVE,
+    "common_falling_blossom_emotion": EffectType.POSITIVE,
+    "gojo_infinity": EffectType.POSITIVE,
+    "gojo_unlimited_void": EffectType.NEGATIVE,
+    "sukuna_malevolent_shrine": EffectType.NEGATIVE,
+    "mahito_self_embodiment_of_perfection": EffectType.NEGATIVE,
+    "itadori_deep_concentration": EffectType.POSITIVE,
+    "itadori_unwavering_will": EffectType.NEGATIVE,
+    "jogo_burn": EffectType.NEGATIVE,
+    "jogo_coffin_of_the_iron_mountain": EffectType.NEGATIVE,
+    "yuta_rika_manifestation": EffectType.POSITIVE,
+    "yuta_true_mutual_love": EffectType.POSITIVE,
+    "yuta_rika_cooldown": EffectType.NEGATIVE,
+    "mahito_true_form": EffectType.POSITIVE,
+    "free_strike_effect": EffectType.POSITIVE,
+    "itadori_divergent_fist_dot": EffectType.NEGATIVE,
+    "zone": EffectType.POSITIVE,
+    "gojo_blindfold": EffectType.NEGATIVE,
+    "gojo_blue_effect": EffectType.POSITIVE,
+    "gojo_red_effect": EffectType.POSITIVE,
+    "mahito_polymorphic_soul_isomer": EffectType.POSITIVE,
+    "manji_kick_counter": EffectType.POSITIVE
+}
 
 class GameManager:
     def __init__(self):
@@ -546,21 +572,24 @@ class GameManager:
 
     # --- Card Effect Functions ---
     def _apply_effect(self, game: Game, source: Player, target: Player, name: str, duration: int, value: Any = None, target_id: str = None):
-        # The duration should account for the current turn, so we add 1
-        # An effect for "1 turn" should last until the end of the target's next turn.
-        # It's applied, player ends turn. Target starts turn (duration ticks to 1). Target ends turn (duration ticks to 0).
-        actual_duration = duration + 1
-        target.effects.append(Effect(name=name, duration=actual_duration, value=value, source_player_id=source.id, target_id=target_id))
+        effect_type = effect_types.get(name, EffectType.NEUTRAL)
+
+        # Check for existing effect
+        existing_effect = next((e for e in target.effects if e.name == name), None)
+        if existing_effect:
+            existing_effect.duration = duration + 1
+        else:
+            effect = Effect(name=name, duration=duration + 1, value=value, source_player_id=source.id, target_id=target_id, type=effect_type)
+            target.effects.append(effect)
         
         effect_card = next((c for c in common_cards + source.character.unique_cards if c.id == name), None)
         if not effect_card:
-             # Try finding in other characters' cards if it's a special effect like a counter
             all_unique_cards = [card for char in characters for card in char.unique_cards]
             effect_card = next((c for c in all_unique_cards if c.id == name), None)
 
         effect_name_for_log = effect_card.name if effect_card else name.replace("_", " ").title()
         
-        game.game_log.append(f"{target.nickname} получает эффект '{effect_name_for_log}' на {duration} хода.")
+        game.game_log.append(f"На {target.nickname} наложен эффект '{effect_name_for_log}' на {duration} раунда.")
 
     def _effect_udar(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)

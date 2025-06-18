@@ -9,9 +9,15 @@ class Rarity(str, Enum):
     EPIC = "Эпическая"
     LEGENDARY = "Легендарная"
 
+class EffectType(str, Enum):
+    POSITIVE = "POSITIVE"
+    NEGATIVE = "NEGATIVE"
+    NEUTRAL = "NEUTRAL"
+
 class Effect(BaseModel):
     name: str
     duration: int # in rounds
+    type: EffectType
     value: Optional[int] = None # e.g., for damage over time
     source_player_id: str 
     target_id: Optional[str] = None
