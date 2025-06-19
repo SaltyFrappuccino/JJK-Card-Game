@@ -947,45 +947,49 @@ class GameManager:
     def _effect_razrez(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        card = next(c for c in player.character.unique_cards if c.id == 'sukuna_dismantle')
-        self._deal_damage(game, player, target, 600, card=card, card_type=card.type)
+        card = self._get_card_safe(player, 'sukuna_dismantle')
+        card_type = card.type if card else CardType.TECHNIQUE
+        self._deal_damage(game, player, target, 600, card=card, card_type=card_type)
         left_player = self._get_left_player(game, self._get_player_index(game, target.id))
         if left_player and left_player.id != player.id: 
-            self._deal_damage(game, player, left_player, 300, card=card, card_type=card.type)
+            self._deal_damage(game, player, left_player, 300, card=card, card_type=card_type)
         return game
         
     def _effect_rasshcheplenie(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        card = next(c for c in player.character.unique_cards if c.id == 'sukuna_cleave')
-        self._deal_damage(game, player, target, 1600, card=card, card_type=card.type)
+        card = self._get_card_safe(player, 'sukuna_cleave')
+        card_type = card.type if card else CardType.TECHNIQUE
+        self._deal_damage(game, player, target, 1600, card=card, card_type=card_type)
         return game
 
     def _effect_rasshcheplenie_pautina(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        card = next(c for c in player.character.unique_cards if c.id == 'sukuna_spiderweb')
-        self._deal_damage(game, player, target, 1000, card=card, card_type=card.type)
+        card = self._get_card_safe(player, 'sukuna_spiderweb')
+        card_type = card.type if card else CardType.TECHNIQUE
+        self._deal_damage(game, player, target, 1000, card=card, card_type=card_type)
         left = self._get_left_player(game, self._get_player_index(game, target.id))
         right = self._get_right_player(game, self._get_player_index(game, target.id))
         if left and left.id != player.id: 
-            self._deal_damage(game, player, left, 500, card=card, card_type=card.type)
+            self._deal_damage(game, player, left, 500, card=card, card_type=card_type)
         if right and right.id != player.id: 
-            self._deal_damage(game, player, right, 500, card=card, card_type=card.type)
+            self._deal_damage(game, player, right, 500, card=card, card_type=card_type)
         return game
 
     def _effect_kamino(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        card = next(c for c in player.character.unique_cards if c.id == 'sukuna_kamino')
+        card = self._get_card_safe(player, 'sukuna_kamino')
+        card_type = card.type if card else CardType.TECHNIQUE
         # Synergy with Domain
         if any(e.name == "sukuna_malevolent_shrine" for e in player.effects):
             opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
-            for op in opponents: self._deal_damage(game, player, op, 1200, card=card, card_type=card.type)
+            for op in opponents: self._deal_damage(game, player, op, 1200, card=card, card_type=card_type)
             return game
 
         target = self._find_player(game, target_id)
         if not target: return game
         initial_hp = target.hp
-        self._deal_damage(game, player, target, 1800, card=card, card_type=card.type)
+        self._deal_damage(game, player, target, 1800, card=card, card_type=card_type)
         if target.hp <= 0 and initial_hp > 0:
             player.energy = min(player.character.max_energy, player.energy + 10000)
         return game
@@ -1028,8 +1032,9 @@ class GameManager:
         if not target: return game
         damage = 1400
         if target.block > 0: damage = int(damage * 1.5)
-        card = next(c for c in player.character.unique_cards if c.id == 'mahito_body_repel')
-        self._deal_damage(game, player, target, damage, card=card, card_type=card.type)
+        card = self._get_card_safe(player, 'mahito_body_repel')
+        card_type = card.type if card else CardType.TECHNIQUE
+        self._deal_damage(game, player, target, damage, card=card, card_type=card_type)
         return game
 
     def _effect_istinnoe_telo(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -1106,37 +1111,38 @@ class GameManager:
         if not targets_ids:
             return game
         
-        card = next((c for c in player.character.unique_cards if c.id == 'jogo_ember_insects'), None)
-        if not card:
-            return game
+        card = self._get_card_safe(player, 'jogo_ember_insects')
+        card_type = card.type if card else CardType.TECHNIQUE
 
         for t_id in targets_ids:
             target = self._find_player(game, t_id)
             if target:
-                self._deal_damage(game, player, target, 200, card=card, card_type=card.type)
+                self._deal_damage(game, player, target, 200, card=card, card_type=card_type)
                 self._apply_specific_heat_level(game, player, target, EFFECT_ID_SMOLDERING)
         
         return game
 
     def _effect_izverzhenie_vulkana(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
-        card = next(c for c in player.character.unique_cards if c.id == 'jogo_volcano_eruption')
-        for op in opponents: self._deal_damage(game, player, op, 600, card=card, card_type=card.type)
+        card = self._get_card_safe(player, 'jogo_volcano_eruption')
+        card_type = card.type if card else CardType.TECHNIQUE
+        for op in opponents: self._deal_damage(game, player, op, 600, card=card, card_type=card_type)
         return game
 
     def _effect_maksimum_meteor(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        card = next(c for c in player.character.unique_cards if c.id == 'jogo_maximum_meteor')
-        self._deal_damage(game, player, target, 2000, card=card, card_type=card.type)
+        card = self._get_card_safe(player, 'jogo_maximum_meteor')
+        card_type = card.type if card else CardType.TECHNIQUE
+        self._deal_damage(game, player, target, 2000, card=card, card_type=card_type)
         self._apply_specific_heat_level(game, player, target, EFFECT_ID_INFERNO)
         
         left = self._get_left_player(game, self._get_player_index(game, target.id))
         right = self._get_right_player(game, self._get_player_index(game, target.id))
         if left and left.id != player.id: 
-            self._deal_damage(game, player, left, 500, card=card, card_type=card.type)
+            self._deal_damage(game, player, left, 500, card=card, card_type=card_type)
         if right and right.id != player.id: 
-            self._deal_damage(game, player, right, 500, card=card, card_type=card.type)
+            self._deal_damage(game, player, right, 500, card=card, card_type=card_type)
         return game
 
     def _effect_grob_stalnoi_gory(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -1222,8 +1228,9 @@ class GameManager:
     def _effect_klinok_usilennyi_energiei(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        card = next(c for c in player.character.unique_cards if c.id == 'yuta_energy_blade')
-        self._deal_damage(game, player, target, 500, card=card, card_type=card.type)
+        card = self._get_card_safe(player, 'yuta_energy_blade')
+        card_type = card.type if card else CardType.TECHNIQUE
+        self._deal_damage(game, player, target, 500, card=card, card_type=card_type)
         return game
 
     def _effect_polnoe_proiavlenie_rika(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -1238,8 +1245,9 @@ class GameManager:
         target = self._find_player(game, target_id)
         if not target: return game
         
-        card = next(c for c in player.character.unique_cards if c.id == 'yuta_pure_love')
-        self._deal_damage(game, player, target, 2500, card=card, card_type=card.type)
+        card = self._get_card_safe(player, 'yuta_pure_love')
+        card_type = card.type if card else CardType.TECHNIQUE
+        self._deal_damage(game, player, target, 2500, card=card, card_type=card_type)
         
         self._apply_effect(game, player, player, "yuta_rika_cooldown", 3)
         return game
@@ -1340,6 +1348,23 @@ class GameManager:
             return alive_players[(alive_index + 1) % len(alive_players)]
         except StopIteration:
             return None
+    
+    def _get_card_safe(self, player: Player, card_id: str) -> Card | None:
+        """Безопасно получает карту из уникальных карт игрока или из всех карт (для скопированных карт)"""
+        # Сначала ищем в уникальных картах игрока
+        card = next((c for c in player.character.unique_cards if c.id == card_id), None)
+        if card:
+            return card
+        
+        # Если не найдено (например, Юта копирует карту), ищем во всех картах всех персонажей
+        all_unique_cards = [card for char in characters for card in char.unique_cards]
+        card = next((c for c in all_unique_cards if c.id == card_id), None)
+        if card:
+            return card
+        
+        # Если всё ещё не найдено, ищем в общих картах
+        card = next((c for c in common_cards if c.id == card_id), None)
+        return card
 
     def add_dummy(self, game_id: str) -> Game:
         game = self.get_game(game_id)
