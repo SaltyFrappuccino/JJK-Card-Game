@@ -9,10 +9,18 @@ import type { Card as CardType } from '../types';
 // Import background images
 import shinjukuBg1 from '../assets/backgrounds/shinjuku_background_1.png';
 import shinjukuBg2 from '../assets/backgrounds/shinjuku_background_2.png';
+import shibuyaBg1 from '../assets/backgrounds/shibuya 1.jpg';
+import shibuyaBg2 from '../assets/backgrounds/shibuya 2.jpg';
+import shibuyaFromJjk from '../assets/backgrounds/shibuya from jjk.jpg';
+import shibuyaFromJjk2 from '../assets/backgrounds/shibuya from jjk 2.jpg';
 
 const BACKGROUNDS = {
   'shinjuku1': shinjukuBg1,
-  'shinjuku2': shinjukuBg2
+  'shinjuku2': shinjukuBg2,
+  'shibuya1': shibuyaBg1,
+  'shibuya2': shibuyaBg2,
+  'shibuyajjk1': shibuyaFromJjk,
+  'shibuyajjk2': shibuyaFromJjk2
 };
 
 const getMultiTargetCount = (card: CardType): number | null => {
@@ -221,7 +229,8 @@ const GamePage: React.FC = () => {
         backgroundImage: `url(${BACKGROUNDS[selectedBackground as keyof typeof BACKGROUNDS]})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
       }
     : {};
 

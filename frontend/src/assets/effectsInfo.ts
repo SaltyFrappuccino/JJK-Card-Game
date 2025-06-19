@@ -42,7 +42,7 @@ export const effectsInfo = {
     "itadori_unwavering_will": {
         title: "Несгибаемая Воля (Итадори)",
         description: "Ваше ХП может опускаться до -3500. По окончании эффекта вы проигрываете.",
-        type: "NEGATIVE"
+        type: "POSITIVE"
     },
     "jogo_burn": {
         title: "Горение (Дзёго)",
@@ -112,6 +112,6 @@ export const effectsInfo = {
     "manji_kick_counter": {
         title: "Контратака 'Манджи-Кик' (Итадори)",
         description: "Следующая атакующая карта (не РТ), которую вы сыграете против Юдзи, будет отменена.",
-        type: "POSITIVE"
+        type: "NEGATIVE"
     }
 }; 

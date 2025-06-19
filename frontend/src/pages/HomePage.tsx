@@ -83,6 +83,9 @@ const HomePage: React.FC = () => {
             <div className="menu-box">
                 <button onClick={handleTraining} className="btn">Тренировка</button>
             </div>
+            <div className="menu-box">
+                <button onClick={() => navigate('/docs')} className="btn btn-docs">📖 Документация</button>
+            </div>
         </div>
     );
 };

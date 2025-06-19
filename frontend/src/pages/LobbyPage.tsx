@@ -9,11 +9,19 @@ import type { Character } from '../types';
 // Import background images
 import shinjukuBg1 from '../assets/backgrounds/shinjuku_background_1.png';
 import shinjukuBg2 from '../assets/backgrounds/shinjuku_background_2.png';
+import shibuyaBg1 from '../assets/backgrounds/shibuya 1.jpg';
+import shibuyaBg2 from '../assets/backgrounds/shibuya 2.jpg';
+import shibuyaFromJjk from '../assets/backgrounds/shibuya from jjk.jpg';
+import shibuyaFromJjk2 from '../assets/backgrounds/shibuya from jjk 2.jpg';
 
 const BACKGROUND_OPTIONS = [
   { id: 'none', name: 'Без фона', image: null },
   { id: 'shinjuku1', name: 'Синдзюку 1', image: shinjukuBg1 },
-  { id: 'shinjuku2', name: 'Синдзюку 2', image: shinjukuBg2 }
+  { id: 'shinjuku2', name: 'Синдзюку 2', image: shinjukuBg2 },
+  { id: 'shibuya1', name: 'Сибуя 1', image: shibuyaBg1 },
+  { id: 'shibuya2', name: 'Сибуя 2', image: shibuyaBg2 },
+  { id: 'shibuyajjk1', name: 'Сибуя JJK 1', image: shibuyaFromJjk },
+  { id: 'shibuyajjk2', name: 'Сибуя JJK 2', image: shibuyaFromJjk2 }
 ];
 
 const SliderSetting: React.FC<{
