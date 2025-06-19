@@ -11,10 +11,12 @@ interface GameStore {
   lobby: LobbyInfo | null;
   game: GameState | null;
   error: string | null;
+  selectedBackground: string;
   setPlayer: (player: PlayerState) => void;
   setLobby: (lobby: LobbyInfo | null) => void;
   setGame: (game: GameState | null) => void;
   setError: (error: string | null) => void;
+  setSelectedBackground: (background: string) => void;
   reset: () => void;
 }
 
@@ -23,10 +25,12 @@ const useGameStore = create<GameStore>((set) => ({
   lobby: null,
   game: null,
   error: null,
+  selectedBackground: '',
   setPlayer: (player) => set({ player }),
   setLobby: (lobby) => set({ lobby }),
   setGame: (game) => set({ game }),
   setError: (error) => set({ error }),
+  setSelectedBackground: (background) => set({ selectedBackground: background }),
   reset: () => set({
     player: { id: null, nickname: null },
     lobby: null,

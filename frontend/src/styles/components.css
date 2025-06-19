@@ -16,28 +16,21 @@
     overflow: hidden;
 }
 
-.card.playable {
+.card.is-playable {
     border-width: 3px;
 }
 
-.card.playable.rarity-common { box-shadow: 0 0 15px var(--rarity-common); }
-.card.playable.rarity-uncommon { box-shadow: 0 0 15px var(--rarity-uncommon); }
-.card.playable.rarity-rare { box-shadow: 0 0 15px var(--rarity-rare); }
-.card.playable.rarity-epic { box-shadow: 0 0 15px var(--rarity-epic); }
-.card.playable.rarity-legendary { box-shadow: 0 0 15px var(--rarity-legendary); }
-
+/* Rarity border colors */
 .card.rarity-common { border-color: var(--rarity-common); }
 .card.rarity-uncommon { border-color: var(--rarity-uncommon); }
-.card.rarity-rare { 
-    border-color: var(--rarity-rare); 
-    box-shadow: 0 0 10px var(--rarity-rare);
-}
+.card.rarity-rare { border-color: var(--rarity-rare); }
 .card.rarity-epic { border-color: var(--rarity-epic); }
 .card.rarity-legendary { border-color: var(--rarity-legendary); }
 
 /* Static glow for rarities */
 .card.rarity-common { box-shadow: 0 0 6px var(--rarity-common); }
 .card.rarity-uncommon { box-shadow: 0 0 8px var(--rarity-uncommon); }
+.card.rarity-rare { box-shadow: 0 0 10px var(--rarity-rare); }
 .card.rarity-epic { box-shadow: 0 0 12px var(--rarity-epic); }
 
 /* Animated legendary glow */
@@ -50,6 +43,13 @@
 .card.rarity-legendary {
     animation: legendary-glow 2s ease-in-out infinite;
 }
+
+/* Enhanced glow for playable cards */
+.card.is-playable.rarity-common { box-shadow: 0 0 15px var(--rarity-common); }
+.card.is-playable.rarity-uncommon { box-shadow: 0 0 15px var(--rarity-uncommon); }
+.card.is-playable.rarity-rare { box-shadow: 0 0 15px var(--rarity-rare); }
+.card.is-playable.rarity-epic { box-shadow: 0 0 15px var(--rarity-epic); }
+.card.is-playable.rarity-legendary { box-shadow: 0 0 20px var(--rarity-legendary), 0 0 35px rgba(241, 196, 15, 1); }
 
 /* выделение карт для сброса */
 .card.discard-selected {
@@ -147,7 +147,7 @@
     max-height: 160%;
     right: -20px;
     bottom: 0;
-    z-index: 0;
+    z-index: 2;
     pointer-events: all;
     filter: drop-shadow(0px -5px 8px rgba(0, 0, 0, 0.9));
     object-fit: contain;
@@ -161,10 +161,17 @@
 
 .nickname, .character-name {
     text-shadow: 
-        -1px -1px 0 #000,  
-         1px -1px 0 #000,
-        -1px  1px 0 #000,
-         1px  1px 0 #000;
+        -2px -2px 0 #000,  
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+        -2px  0px 0 #000,
+         2px  0px 0 #000,
+         0px -2px 0 #000,
+         0px  2px 0 #000,
+         0px  0px 8px rgba(255, 255, 255, 0.8),
+         0px  0px 15px rgba(255, 255, 255, 0.6),
+         0px  0px 25px rgba(255, 255, 255, 0.4);
 }
 
 .player-pod.current-player {
@@ -189,7 +196,7 @@
     margin-bottom: 10px;
     align-items: center;
     position: relative;
-    z-index: 1;
+    z-index: 2;
 }
 
 .status-bars {
@@ -198,6 +205,7 @@
     gap: 5px;
     margin-bottom: 5px;
     position: relative;
+    z-index: 2;
     z-index: 1;
 }
 
@@ -323,5 +331,176 @@ button:hover {
 
 .remove-dummy-btn {
     position: relative;
+    z-index: 1;
+}
+
+/* Character Accent Color Glowing Effects */
+@keyframes character-glow-white {
+    0% { 
+        box-shadow: 0 0 3px rgba(255, 255, 255, 0.8), 
+                    0 0 6px rgba(255, 255, 255, 0.6), 
+                    inset 0 0 8px rgba(255, 255, 255, 0.1);
+    }
+    50% { 
+        box-shadow: 0 0 5px rgba(255, 255, 255, 1), 
+                    0 0 8px rgba(255, 255, 255, 0.8), 
+                    inset 0 0 12px rgba(255, 255, 255, 0.15);
+    }
+    100% { 
+        box-shadow: 0 0 3px rgba(255, 255, 255, 0.8), 
+                    0 0 6px rgba(255, 255, 255, 0.6), 
+                    inset 0 0 8px rgba(255, 255, 255, 0.1);
+    }
+}
+
+@keyframes character-glow-crimson {
+    0% { 
+        box-shadow: 0 0 3px rgba(220, 20, 60, 0.8), 
+                    0 0 6px rgba(220, 20, 60, 0.6), 
+                    inset 0 0 8px rgba(220, 20, 60, 0.1);
+    }
+    50% { 
+        box-shadow: 0 0 5px rgba(220, 20, 60, 1), 
+                    0 0 8px rgba(220, 20, 60, 0.8), 
+                    inset 0 0 12px rgba(220, 20, 60, 0.15);
+    }
+    100% { 
+        box-shadow: 0 0 3px rgba(220, 20, 60, 0.8), 
+                    0 0 6px rgba(220, 20, 60, 0.6), 
+                    inset 0 0 8px rgba(220, 20, 60, 0.1);
+    }
+}
+
+@keyframes character-glow-orange {
+    0% { 
+        box-shadow: 0 0 3px rgba(255, 140, 0, 0.8), 
+                    0 0 6px rgba(255, 140, 0, 0.6), 
+                    inset 0 0 8px rgba(255, 140, 0, 0.1);
+    }
+    50% { 
+        box-shadow: 0 0 5px rgba(255, 140, 0, 1), 
+                    0 0 8px rgba(255, 140, 0, 0.8), 
+                    inset 0 0 12px rgba(255, 140, 0, 0.15);
+    }
+    100% { 
+        box-shadow: 0 0 3px rgba(255, 140, 0, 0.8), 
+                    0 0 6px rgba(255, 140, 0, 0.6), 
+                    inset 0 0 8px rgba(255, 140, 0, 0.1);
+    }
+}
+
+@keyframes character-glow-slate {
+    0% { 
+        box-shadow: 0 0 3px rgba(112, 128, 144, 0.8), 
+                    0 0 6px rgba(112, 128, 144, 0.6), 
+                    inset 0 0 8px rgba(112, 128, 144, 0.1);
+    }
+    50% { 
+        box-shadow: 0 0 5px rgba(112, 128, 144, 1), 
+                    0 0 8px rgba(112, 128, 144, 0.8), 
+                    inset 0 0 12px rgba(112, 128, 144, 0.15);
+    }
+    100% { 
+        box-shadow: 0 0 3px rgba(112, 128, 144, 0.8), 
+                    0 0 6px rgba(112, 128, 144, 0.6), 
+                    inset 0 0 8px rgba(112, 128, 144, 0.1);
+    }
+}
+
+@keyframes character-glow-pink {
+    0% { 
+        box-shadow: 0 0 8px rgba(255, 105, 180, 0.7), 
+                    0 0 15px rgba(255, 105, 180, 0.5), 
+                    inset 0 0 10px rgba(255, 105, 180, 0.1);
+    }
+    50% { 
+        box-shadow: 0 0 12px rgba(255, 105, 180, 1), 
+                    0 0 20px rgba(255, 105, 180, 0.7), 
+                    inset 0 0 15px rgba(255, 105, 180, 0.2);
+    }
+    100% { 
+        box-shadow: 0 0 8px rgba(255, 105, 180, 0.7), 
+                    0 0 15px rgba(255, 105, 180, 0.5), 
+                    inset 0 0 10px rgba(255, 105, 180, 0.1);
+    }
+}
+
+@keyframes character-glow-brown {
+    0% { 
+        box-shadow: 0 0 8px rgba(205, 133, 63, 0.7), 
+                    0 0 15px rgba(205, 133, 63, 0.5), 
+                    inset 0 0 10px rgba(205, 133, 63, 0.1);
+    }
+    50% { 
+        box-shadow: 0 0 12px rgba(205, 133, 63, 1), 
+                    0 0 20px rgba(205, 133, 63, 0.7), 
+                    inset 0 0 15px rgba(205, 133, 63, 0.2);
+    }
+    100% { 
+        box-shadow: 0 0 8px rgba(205, 133, 63, 0.7), 
+                    0 0 15px rgba(205, 133, 63, 0.5), 
+                    inset 0 0 10px rgba(205, 133, 63, 0.1);
+    }
+}
+
+/* Character-specific glow classes */
+.player-pod.character-glow-gojo {
+    border-color: #FFFFFF;
+    animation: character-glow-white 3s ease-in-out infinite;
+    position: relative;
+}
+
+.player-pod.character-glow-sukuna {
+    border-color: #DC143C;
+    animation: character-glow-crimson 3s ease-in-out infinite;
+    position: relative;
+}
+
+.player-pod.character-glow-jogo {
+    border-color: #FF8C00;
+    animation: character-glow-orange 3s ease-in-out infinite;
+    position: relative;
+}
+
+.player-pod.character-glow-mahito {
+    border-color: #708090;
+    animation: character-glow-slate 3s ease-in-out infinite;
+    position: relative;
+}
+
+.player-pod.character-glow-yuta {
+    border-color: #FF69B4;
+    animation: character-glow-pink 3s ease-in-out infinite;
+    position: relative;
+}
+
+.player-pod.character-glow-itadori {
+    border-color: #CD853F;
+    animation: character-glow-brown 3s ease-in-out infinite;
+    position: relative;
+}
+
+/* Shimmer overlay effect */
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.player-pod[class*="character-glow"]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.05),
+        transparent
+    );
+    animation: shimmer 6s ease-in-out infinite;
+    border-radius: 8px;
+    pointer-events: none;
     z-index: 1;
 } 

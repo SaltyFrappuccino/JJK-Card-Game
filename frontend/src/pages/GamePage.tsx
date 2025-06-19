@@ -6,6 +6,15 @@ import PlayerPod from '../components/PlayerPod';
 import { Card } from '../components/Card';
 import type { Card as CardType } from '../types';
 
+// Import background images
+import shinjukuBg1 from '../assets/backgrounds/shinjuku_background_1.png';
+import shinjukuBg2 from '../assets/backgrounds/shinjuku_background_2.png';
+
+const BACKGROUNDS = {
+  'shinjuku1': shinjukuBg1,
+  'shinjuku2': shinjukuBg2
+};
+
 const getMultiTargetCount = (card: CardType): number | null => {
   if (card.id === 'jogo_ember_insects') {
     return 3;
@@ -41,7 +50,7 @@ const getOpponentStyle = (index: number, totalOpponents: number): React.CSSPrope
 };
 
 const GamePage: React.FC = () => {
-  const { game, player: self, reset: resetGame } = useGameStore();
+  const { game, player: self, selectedBackground, reset: resetGame } = useGameStore();
   const { emitPlayCard, emitEndTurn, emitDiscardCards, emitAddDummy, emitRemoveDummy } = useWS();
   const navigate = useNavigate();
 
@@ -206,8 +215,18 @@ const GamePage: React.FC = () => {
     ? [...game.players.slice(selfIndex + 1), ...game.players.slice(0, selfIndex)]
     : opponents;
 
+  // Get background style
+  const backgroundStyle: React.CSSProperties = selectedBackground && selectedBackground !== 'none' && BACKGROUNDS[selectedBackground as keyof typeof BACKGROUNDS]
+    ? {
+        backgroundImage: `url(${BACKGROUNDS[selectedBackground as keyof typeof BACKGROUNDS]})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }
+    : {};
+
   return (
-    <div className="game-page">
+    <div className="game-page" style={backgroundStyle}>
       <div className="turn-indicator">Ход: {currentPlayer?.nickname}</div>
       {targeting && multiTargetCount && (
         <div className="targeting-indicator">

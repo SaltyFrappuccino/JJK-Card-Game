@@ -6,11 +6,22 @@ import { api } from '../services/api';
 import { ALL_CHARACTERS } from '../assets/content';
 import type { Character } from '../types';
 
+// Import background images
+import shinjukuBg1 from '../assets/backgrounds/shinjuku_background_1.png';
+import shinjukuBg2 from '../assets/backgrounds/shinjuku_background_2.png';
+
+const BACKGROUND_OPTIONS = [
+  { id: 'none', name: 'Без фона', image: null },
+  { id: 'shinjuku1', name: 'Синдзюку 1', image: shinjukuBg1 },
+  { id: 'shinjuku2', name: 'Синдзюку 2', image: shinjukuBg2 }
+];
+
 const LobbyPage: React.FC = () => {
   useWS(); // Initialize WebSocket listeners
-  const { lobby, player, setLobby, setError } = useGameStore();
+  const { lobby, player, selectedBackground, setLobby, setError, setSelectedBackground } = useGameStore();
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [isStarting, setIsStarting] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const navigate = useNavigate();
 
   const isHost = lobby?.host_id === player?.id;
@@ -71,6 +82,40 @@ const LobbyPage: React.FC = () => {
       <h2>{isTraining ? 'Тренировка' : `Лобби: ${lobby.id}`}</h2>
       {!isTraining && (
           <button className="copy-code-btn" onClick={() => navigator.clipboard.writeText(lobby.id)}>Скопировать код</button>
+      )}
+      
+      {isHost && (
+        <div className="host-controls">
+          <button className="settings-btn" onClick={() => setShowSettings(!showSettings)}>
+            {showSettings ? 'Скрыть настройки' : 'Настройки'}
+          </button>
+          
+          {showSettings && (
+            <div className="game-settings">
+              <h3>Настройки игры</h3>
+              
+              <div className="setting-group">
+                <label>Фон игры:</label>
+                <div className="background-options">
+                  {BACKGROUND_OPTIONS.map(bg => (
+                    <div 
+                      key={bg.id}
+                      className={`background-option ${selectedBackground === bg.id ? 'selected' : ''}`}
+                      onClick={() => setSelectedBackground(bg.id)}
+                    >
+                      {bg.image ? (
+                        <img src={bg.image} alt={bg.name} className="background-preview" />
+                      ) : (
+                        <div className="no-background-preview">Без фона</div>
+                      )}
+                      <span className="background-name">{bg.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       )}
       
       <div className="lobby-container">

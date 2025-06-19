@@ -35,6 +35,21 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
     ? fullCharacterData?.portrait_blindfolded
     : fullCharacterData?.portrait;
 
+  // Get character glow class
+  const getCharacterGlowClass = (characterId: string | undefined): string => {
+    switch (characterId) {
+      case 'gojo_satoru': return 'character-glow-gojo';
+      case 'sukuna_ryomen': return 'character-glow-sukuna';
+      case 'jogo': return 'character-glow-jogo';
+      case 'mahito': return 'character-glow-mahito';
+      case 'yuta_okkotsu': return 'character-glow-yuta';
+      case 'itadori_yuji': return 'character-glow-itadori';
+      default: return '';
+    }
+  };
+
+  const characterGlowClass = getCharacterGlowClass(player.character?.id);
+
   return (
     <div
       style={style}
@@ -43,7 +58,7 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
         'targetable': isTargetable,
         'defeated': player.status === 'DEFEATED',
         'self-player': isSelf,
-      })}
+      }, characterGlowClass)}
       onClick={(event) => onSelect && isTargetable && player.status !== 'DEFEATED' && onSelect(player.id, event)}
       onContextMenu={(event) => onSelect && isTargetable && player.status !== 'DEFEATED' && onSelect(player.id, event)}
     >

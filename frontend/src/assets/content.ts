@@ -60,6 +60,16 @@ import yutaRikaManifestationImg from './cards/yuta/Rika_Full_Manifestation.webp'
 import yutaPureLoveImg from './cards/yuta/Pure_Love.webp';
 import yutaDomainImg from './cards/yuta/Authentic_Mutual_Love.webp';
 
+// Character accent colors for card highlighting
+export const CHARACTER_ACCENT_COLORS = {
+  'gojo_satoru': '#FFFFFF',        // Белый
+  'sukuna_ryomen': '#DC143C',      // Алый
+  'jogo': '#FF8C00',               // Оранжевый  
+  'mahito': '#708090',             // Серо-голубой
+  'yuta_okkotsu': '#FF69B4',      // Розовый
+  'itadori_yuji': '#CD853F'       // Оттенок рыжего
+} as const;
+
 // IMPORTANT: ID's must be manually synchronized with backend/app/content.py
 
 export const COMMON_CARDS: Card[] = [
@@ -80,6 +90,7 @@ export const ALL_CHARACTERS: Character[] = [
     name: 'Сатору Годзё',
     max_hp: 5500,
     max_energy: 75000,
+    accent_color: CHARACTER_ACCENT_COLORS.gojo_satoru,
     portrait: gojoPortrait,
     portrait_blindfolded: gojoBlindfoldedPortrait,
     passive_ability_name: 'Шесть глаз и Бесконечность',
@@ -155,6 +166,7 @@ export const ALL_CHARACTERS: Character[] = [
     name: 'Рёмен Сукуна',
     max_hp: 7000,
     max_energy: 100000,
+    accent_color: CHARACTER_ACCENT_COLORS.sukuna_ryomen,
     portrait: sukunaPortrait,
     passive_ability_name: 'Жажда Развлечений',
     passive_ability_description: 'Если вам наносит урон противник, чей текущий % ХП больше, чем ваш, вы немедленно восстанавливаете 5% от вашего максимального запаса ПЭ (5000 ПЭ).',
@@ -171,6 +183,7 @@ export const ALL_CHARACTERS: Character[] = [
     name: 'Махито',
     max_hp: 4000,
     max_energy: 50000,
+    accent_color: CHARACTER_ACCENT_COLORS.mahito,
     portrait: mahitoPortrait,
     passive_ability_name: 'Праздная Трансфигурация',
     passive_ability_description: "Карта 'Удар' наносит вам 0 урона. Вы начинаете игру с 0 Искажённых Душ. Каждые 2 своих хода вы гарантированно получаете карту 'Касание Души' в руку.",
@@ -196,6 +209,7 @@ export const ALL_CHARACTERS: Character[] = [
     name: 'Юдзи Итадори',
     max_hp: 7500,
     max_energy: 40000,
+    accent_color: CHARACTER_ACCENT_COLORS.itadori_yuji,
     portrait: itadoriPortrait,
     passive_ability_name: 'Сверхчеловеческая Сила',
     passive_ability_description: "Ваши 'Удары' наносят +150 урона. Каждый раз, когда вы играете карту 'Удар', вы восстанавливаете 1000 ПЭ. Ваш базовый шанс 'Чёрной Вспышки' равен 2/6. Когда на вас есть эффект \"Зона\", ваш шанс становится 3/6.",
@@ -211,6 +225,7 @@ export const ALL_CHARACTERS: Character[] = [
     name: 'Дзёго',
     max_hp: 5000,
     max_energy: 65000,
+    accent_color: CHARACTER_ACCENT_COLORS.jogo,
     portrait: jogoPortrait,
     passive_ability_name: 'Прикосновение Лавы',
     passive_ability_description: "Каждый раз, когда вы наносите урон картой Техники, цель получает эффект 'Горение' на 2 раунда (100 урона в начале её хода).",
@@ -226,6 +241,7 @@ export const ALL_CHARACTERS: Character[] = [
     name: 'Юта Оккоцу',
     max_hp: 6000,
     max_energy: 85000,
+    accent_color: CHARACTER_ACCENT_COLORS.yuta_okkotsu,
     portrait: yutaPortrait,
     passive_ability_name: 'Копирование и Рика',
     passive_ability_description: 'Когда противник наносит вам урон картой Техники, копия этой карты добавляется в ваш сброс (стоимость х1.25). Дополнительно, в конце вашего хода Рика наносит 250 урона случайному противнику.',

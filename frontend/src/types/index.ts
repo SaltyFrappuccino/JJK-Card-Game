@@ -15,6 +15,7 @@ export interface Character {
   name: string;
   max_hp: number;
   max_energy: number;
+  accent_color: string;
   passive_ability_name: string;
   passive_ability_description: string;
   unique_cards: Card[];
