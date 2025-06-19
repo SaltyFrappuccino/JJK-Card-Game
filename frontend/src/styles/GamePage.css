@@ -1,6 +1,6 @@
 .game-page {
     width: 100vw;
-    min-height: 100vh;
+    height: 100vh;
     position: relative;
     display: grid;
     grid-template-areas:
@@ -8,7 +8,7 @@
         "ui ui ui";
     grid-template-rows: 2fr 1fr;
     grid-template-columns: 1fr 1fr 300px;
-    overflow: visible;
+    overflow: hidden;
 }
 
 .game-page::before {
@@ -71,9 +71,9 @@
     background: linear-gradient(to top, rgba(17, 24, 39, 1), rgba(17, 24, 39, 0.7));
     border-top: 2px solid var(--border-color);
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
-    padding: 10px 40px;
+    padding: 20px 40px;
 }
 
 .own-player-pod {
@@ -87,7 +87,7 @@
     justify-content: center;
     align-items: flex-end;
     gap: 0;
-    padding-bottom: 60px;
+    padding-bottom: 20px;
     flex-grow: 1;
 }
 

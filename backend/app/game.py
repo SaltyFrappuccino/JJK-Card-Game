@@ -22,6 +22,7 @@ effect_types = {
     "mahito_self_embodiment_of_perfection": EffectType.NEGATIVE,
     "itadori_deep_concentration": EffectType.POSITIVE,
     "itadori_unwavering_will": EffectType.NEGATIVE,
+    "itadori_suppression_of_will": EffectType.NEGATIVE,
     "jogo_burn": EffectType.NEGATIVE,
     "jogo_coffin_of_the_iron_mountain": EffectType.NEGATIVE,
     "yuta_rika_manifestation": EffectType.POSITIVE,
@@ -168,11 +169,20 @@ class GameManager:
         if card_to_play.id == "gojo_remove_blindfold":
             if player.hp > player.character.max_hp * 0.33:
                 raise GameException("Можно использовать только если ХП меньше или равно 33%.")
+        
+        if card_to_play.id == "itadori_let_him_out":
+            if player.hp >= player.character.max_hp * 0.40:
+                raise GameException("Можно использовать только если ХП меньше 40% от максимального.")
 
         # --- Domain Expansion Effects ---
         if any(e.name == EFFECT_ID_UNLIMITED_VOID for e in player.effects):
             if card_to_play.type == CardType.TECHNIQUE or card_to_play.rarity in [Rarity.EPIC, Rarity.LEGENDARY]:
                 raise GameException("Вы не можете использовать эту карту из-за 'Информационной перегрузки'.")
+        
+        # --- Suppression of Will Effect ---
+        if any(e.name == "itadori_suppression_of_will" for e in player.effects):
+            if card_to_play.rarity in [Rarity.EPIC, Rarity.LEGENDARY]:
+                raise GameException("Вы не можете использовать эпические и легендарные карты из-за 'Подавления Воли'.")
 
         if not is_free_udar:
             player.energy -= card_cost
@@ -548,6 +558,10 @@ class GameManager:
         if any(e.name == "common_falling_blossom_emotion" for e in target.effects):
             actual_damage = int(actual_damage * 0.67) # Reduce damage by 33%
 
+        # Suppression of Will damage reduction
+        if source_player and any(e.name == "itadori_suppression_of_will" for e in source_player.effects):
+            actual_damage = int(actual_damage * 0.67) # Reduce damage by 33%
+
         # Mahito's "True Body" damage reduction
         if any(e.name == "mahito_true_form" for e in target.effects) and card and card.id == "common_strike":
             actual_damage = int(actual_damage * 0.5)
@@ -728,7 +742,7 @@ class GameManager:
             self._deal_damage(game, player, target, 1200, card_type=CardType.TECHNIQUE)
             target_index = self._get_player_index(game, target_id)
             right_player = self._get_right_player(game, target_index)
-            if right_player:
+            if right_player and right_player.id != player.id:
                 self._deal_damage(game, player, right_player, 600, card_type=CardType.TECHNIQUE)
             return game
         
@@ -736,7 +750,7 @@ class GameManager:
         
         target_index = self._get_player_index(game, target_id)
         right_player = self._get_right_player(game, target_index)
-        if right_player:
+        if right_player and right_player.id != player.id:
             self._deal_damage(game, player, right_player, 600, card_type=CardType.TECHNIQUE)
         self._apply_effect(game, player, player, "gojo_red_effect", 999)
         return game
@@ -774,7 +788,8 @@ class GameManager:
         card = next(c for c in player.character.unique_cards if c.id == 'sukuna_cleave')
         self._deal_damage(game, player, target, 600, card=card, card_type=card.type)
         left_player = self._get_left_player(game, self._get_player_index(game, target.id))
-        if left_player: self._deal_damage(game, player, left_player, 300, card=card, card_type=card.type)
+        if left_player and left_player.id != player.id: 
+            self._deal_damage(game, player, left_player, 300, card=card, card_type=card.type)
         return game
         
     def _effect_rasshcheplenie(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -791,8 +806,10 @@ class GameManager:
         self._deal_damage(game, player, target, 1000, card=card, card_type=card.type)
         left = self._get_left_player(game, self._get_player_index(game, target.id))
         right = self._get_right_player(game, self._get_player_index(game, target.id))
-        if left: self._deal_damage(game, player, left, 500, card=card, card_type=card.type)
-        if right: self._deal_damage(game, player, right, 500, card=card, card_type=card.type)
+        if left and left.id != player.id: 
+            self._deal_damage(game, player, left, 500, card=card, card_type=card.type)
+        if right and right.id != player.id: 
+            self._deal_damage(game, player, right, 500, card=card, card_type=card.type)
         return game
 
     def _effect_kamino(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -903,7 +920,7 @@ class GameManager:
     def _effect_izverzhenie_vulkana(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
         card = next(c for c in player.character.unique_cards if c.id == 'jogo_volcano_eruption')
-        for op in opponents: self._deal_damage(game, player, op, 500, card=card, card_type=card.type)
+        for op in opponents: self._deal_damage(game, player, op, 600, card=card, card_type=card.type)
         return game
 
     def _effect_maksimum_meteor(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -913,8 +930,10 @@ class GameManager:
         self._deal_damage(game, player, target, 2000, card=card, card_type=card.type)
         left = self._get_left_player(game, self._get_player_index(game, target.id))
         right = self._get_right_player(game, self._get_player_index(game, target.id))
-        if left: self._deal_damage(game, player, left, 500, card=card, card_type=card.type)
-        if right: self._deal_damage(game, player, right, 500, card=card, card_type=card.type)
+        if left and left.id != player.id: 
+            self._deal_damage(game, player, left, 500, card=card, card_type=card.type)
+        if right and right.id != player.id: 
+            self._deal_damage(game, player, right, 500, card=card, card_type=card.type)
         return game
 
     def _effect_grob_stalnoi_gory(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -1001,6 +1020,7 @@ class GameManager:
             "yuta_true_mutual_love": self._effect_istinnaia_i_vzaimnaia_liubov,
             "yuta_pure_love": self._effect_chistaia_liubov,
             "gojo_remove_blindfold": self._effect_snyat_povyazku,
+            "itadori_let_him_out": self._effect_pozvolit_emu_vyiti,
             "manji_kick_counter": self._effect_manji_kick,
         }
         return effect_map.get(card_id)
@@ -1082,6 +1102,41 @@ class GameManager:
         player.block += 500
         self._apply_effect(game, player, player, "mahito_polymorphic_soul_isomer", 2)
         game.game_log.append(f"{player.nickname} получает 500 блока от 'Полиморфной Изомерной Души'.")
+        return game
+
+    def _effect_pozvolit_emu_vyiti(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
+        if not player.character:
+            return game
+        
+        heal_amount = int(player.character.max_hp * 0.30)
+        player.hp = min(player.character.max_hp, player.hp + heal_amount)
+        game.game_log.append(f"{player.nickname} восстанавливает {heal_amount} ХП от 'Позволить Ему Выйти'!")
+        
+        alive_opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
+        if not alive_opponents:
+            return game
+        
+        cleave_count = random.randint(1, 3)
+        dismantle_count = random.randint(1, 3)
+        
+        game.game_log.append(f"Сила Сукуны высвобождается! {cleave_count} Расщеплений и {dismantle_count} Рассечений!")
+        
+        for _ in range(cleave_count):
+            target = random.choice(alive_opponents)
+            self._deal_damage(game, player, target, 600, card_type=CardType.TECHNIQUE)
+            left = self._get_left_player(game, self._get_player_index(game, target.id))
+            if left and left.status == PlayerStatus.ALIVE and left.id != player.id:
+                self._deal_damage(game, player, left, 300, card_type=CardType.TECHNIQUE)
+            game.game_log.append(f"Расщепление Сукуны поражает {target.nickname}!")
+        
+        for _ in range(dismantle_count):
+            target = random.choice(alive_opponents)
+            self._deal_damage(game, player, target, 1600, card_type=CardType.TECHNIQUE)
+            game.game_log.append(f"Рассечение Сукуны поражает {target.nickname}!")
+        
+        self._apply_effect(game, player, player, "itadori_suppression_of_will", 2)
+        game.game_log.append(f"{player.nickname} получает эффект 'Подавление Воли' на 2 раунда!")
+        
         return game
 
 game_manager = GameManager()

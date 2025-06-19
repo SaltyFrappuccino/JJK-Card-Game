@@ -218,6 +218,7 @@ export const ALL_CHARACTERS: Character[] = [
       { id: "itadori_manji_kick", name: 'Манджи-Кик', type: 'TECHNIQUE', rarity: 'RARE', cost: 6000, description: 'Наносит 600 урона цели. Следующая атакующая карта (любая, кроме РТ), которую эта цель сыграет против вас, будет отменена.', image: itadoriManjiKickImg },
       { id: "itadori_deep_concentration", name: 'Глубокая Концентрация', type: 'TECHNIQUE', rarity: 'EPIC', cost: 18000, description: 'Вы получаете эффект "Концентрация" на 2 хода. Следующая ваша "Чёрная Вспышка", сыгранная пока эффект активен, гарантированно сработает.', image: itadoriDeepConcentrationImg },
       { id: "itadori_unwavering_will", name: 'Несгибаемая Воля', type: 'TECHNIQUE', rarity: 'LEGENDARY', cost: 25000, description: 'Получаете эффект "Последний Бой" на 5 ваших ходов. Пока он активен, ваше ХП может опускаться до -3500. Как только эффект заканчивается, вы проигрываете.', image: itadoriUnwaveringWillImg },
+      { id: "itadori_let_him_out", name: 'Позволить Ему Выйти', type: 'TECHNIQUE', rarity: 'LEGENDARY', cost: 15000, description: 'Вы немедленно восстанавливаете 30% от вашего максимального ХП. Сразу после этого от вашего имени разыгрываются от 1 до 3 карт "Расщепление" и от 1 до 3 карт "Рассечение" по случайным противникам. После завершения всех атак вы получаете эффект "Подавление Воли" на 2 раунда.\nУсловие: можно разыграть, только если ваше текущее ХП ниже 40% от максимального.', image: itadoriUnwaveringWillImg },
     ]
   },
   {
