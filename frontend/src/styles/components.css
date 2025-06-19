@@ -116,7 +116,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease-in-out;
-    z-index: 9999 !important;
+    z-index: 10000 !important;
 }
 
 .tooltip-container:hover .tooltip-content {
@@ -159,44 +159,50 @@
     max-height: 160%;
     right: -20px;
     bottom: 0;
-    z-index: -1;
+    z-index: -10;
     pointer-events: all;
     filter: drop-shadow(0px -5px 8px rgba(0, 0, 0, 0.9));
     object-fit: contain;
     object-position: bottom;
-    transition: transform 0.1s ease-out, z-index 0s ease-out;
+    transition: transform 0.1s ease-out;
     transform-style: preserve-3d;
 }
 
 /* Принудительно блокируем выезд портрета для карточки себя во время хода */
 .player-pod.self-player .player-portrait {
-    z-index: 1 !important;
+    z-index: -10 !important;
 }
 
+/* Портрет всегда остается позади эффектов */
 .player-pod:hover .player-portrait {
-    z-index: 4;
+    z-index: -10 !important;
+}
+
+/* Убираем любые возможности портрета вылезти наверх */
+.player-portrait {
+    z-index: -10 !important;
 }
 
 /* Отключаем hover эффект для карточки себя */
 .player-pod.self-player:hover .player-portrait {
-    z-index: 1 !important;
+    z-index: -10 !important;
 }
 
 .player-pod.self-player.current-player .player-portrait {
-    z-index: 1 !important;
+    z-index: -10 !important;
 }
 
 .player-pod.self-player.current-player:hover .player-portrait {
-    z-index: 1 !important;
+    z-index: -10 !important;
 }
 
 /* Дополнительная защита для карточки с кнопкой конца хода */
 .player-pod.self-player:has(.end-turn-button) .player-portrait {
-    z-index: 1 !important;
+    z-index: -10 !important;
 }
 
 .player-pod.self-player:has(.end-turn-button):hover .player-portrait {
-    z-index: 1 !important;
+    z-index: -10 !important;
 }
 
 .player-pod.self-player .player-portrait {
@@ -296,7 +302,7 @@
     flex-wrap: wrap;
     margin-top: 5px;
     position: relative;
-    z-index: 2;
+    z-index: 10;
 }
 
 .effect-icon {
@@ -311,6 +317,8 @@
     font-weight: bold;
     border: 1px solid #fff;
     color: #fff;
+    position: relative;
+    z-index: 10;
 }
 
 .effect-icon--positive {
@@ -331,6 +339,16 @@
 .tooltip-negative strong {
     color: #ff4d4d;
     text-shadow: 0 0 5px #ff4d4d, 0 0 10px #ff4d4d;
+}
+
+.effect-icon-container {
+    position: relative;
+    z-index: 15;
+}
+
+/* CSS fallback: прячем портрет при hover на блоке эффектов */
+.player-pod:has(.effect-icon-container:hover) .player-portrait {
+    z-index: -50 !important;
 }
 
 .end-turn-button {
@@ -569,7 +587,27 @@ button:hover {
     z-index: 1 !important;
 }
 
+/* Убеждаемся что tooltip эффектов всегда поверх портретов */
+.player-pod .effect-icon-container [data-tooltip-id] {
+    z-index: 999999 !important;
+}
+
+/* Дополнительная защита для всех tooltip */
+[data-tooltip-id] {
+    z-index: 999999 !important;
+}
+
+.Tooltip {
+    z-index: 999999 !important;
+}
+
 .react-tooltip {
     position: fixed !important;
-    z-index: 9999 !important;
+    z-index: 999999 !important;
+    pointer-events: auto !important;
+}
+
+/* Универсальное правило для портретов - всегда остаются позади */
+.player-pod .player-portrait {
+    z-index: -20 !important;
 } 

@@ -21,8 +21,10 @@ interface PlayerPodProps {
 
 const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, onSelect, isSelf = false, onEndTurn, viewerIsGojo = false, isTraining = false, onRemoveDummy, style }) => {
   const podRef = useRef<HTMLDivElement>(null);
+  const portraitRef = useRef<HTMLImageElement>(null);
   const [transform, setTransform] = useState('');
   const [portraitTransform, setPortraitTransform] = useState('');
+  const [isEffectHovered, setIsEffectHovered] = useState(false);
   
   const fullCharacterData = player.character ? ALL_CHARACTERS.find(c => c.id === player.character!.id) : null;
 
@@ -84,6 +86,14 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
     setPortraitTransform('');
   };
 
+  const handleEffectMouseEnter = () => {
+    setIsEffectHovered(true);
+  };
+
+  const handleEffectMouseLeave = () => {
+    setIsEffectHovered(false);
+  };
+
   return (
     <div
       ref={podRef}
@@ -101,10 +111,14 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
     >
       {fullCharacterData && portraitSrc && (
         <img 
+          ref={portraitRef}
           src={portraitSrc} 
           alt={fullCharacterData.name} 
           className="player-portrait"
-          style={{ transform: portraitTransform }}
+          style={{ 
+            transform: portraitTransform,
+            zIndex: isEffectHovered ? -10 : undefined
+          }}
           data-tooltip-id={`passive-tooltip-${player.id}`}
           data-tooltip-html={`<strong>${fullCharacterData.passive_ability_name}</strong><br />${fullCharacterData.passive_ability_description}`}
         />
@@ -153,7 +167,12 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
           });
 
           return (
-            <div key={index} className="effect-icon-container">
+            <div 
+              key={index} 
+              className="effect-icon-container"
+              onMouseEnter={handleEffectMouseEnter}
+              onMouseLeave={handleEffectMouseLeave}
+            >
               <div 
                 className={effectClassName}
                 data-tooltip-id={tooltipId}
