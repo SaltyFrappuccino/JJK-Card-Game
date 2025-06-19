@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { LobbyInfo } from '../types';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: 'http://185.188.182.11:8002/api',
   headers: {
     'Content-Type': 'application/json',
   },

@@ -1,2 +1,2 @@
 export const createWS = (lobbyId: string, playerId: string) =>
-  new WebSocket(`ws://localhost:8000/ws/${lobbyId}/${playerId}`); 
+  new WebSocket(`ws://185.188.182.11:8002/ws/${lobbyId}/${playerId}`); 
