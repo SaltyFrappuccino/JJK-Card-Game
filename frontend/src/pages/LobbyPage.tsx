@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import { useWS } from '../hooks/useSocket';
@@ -28,15 +28,6 @@ const LobbyPage: React.FC = () => {
   const navigate = useNavigate();
 
   const isHost = lobby?.host_id === player?.id;
-
-  // Синхронизируем локальное состояние с настройками лобби
-  useEffect(() => {
-    if (lobby?.game_settings) {
-      setHpPercentage(lobby.game_settings.hp_percentage);
-      setMaxEnergyPercentage(lobby.game_settings.max_energy_percentage);
-      setStartingEnergyPercentage(lobby.game_settings.starting_energy_percentage);
-    }
-  }, [lobby?.game_settings]);
 
   const handleKickPlayer = async (playerIdToKick: string) => {
     if (!lobby || !player?.id || !isHost) return;
@@ -72,6 +63,12 @@ const LobbyPage: React.FC = () => {
     if (!lobby || !player?.id) return;
     setIsStarting(true);
     try {
+      // Сначала обновляем настройки игры
+      if (isHost) {
+        await api.updateGameSettings(lobby.id, player.id, hpPercentage, maxEnergyPercentage, startingEnergyPercentage);
+      }
+      
+      // Затем начинаем игру
       await api.startGame(lobby.id, player.id);
       // Navigation will be handled by the 'game_started' socket event in useSocket hook
     } catch (error: any) {
@@ -80,15 +77,7 @@ const LobbyPage: React.FC = () => {
     }
   };
 
-  const updateGameSettings = async () => {
-    if (!lobby || !player?.id || !isHost) return;
-    try {
-      const { data } = await api.updateGameSettings(lobby.id, player.id, hpPercentage, maxEnergyPercentage, startingEnergyPercentage);
-      setLobby(data);
-    } catch (error: any) {
-      setError(error.response?.data?.detail || 'Не удалось обновить настройки игры.');
-    }
-  };
+
 
   if (!lobby || !player) {
     // This could happen on a page refresh. Redirect to home.
@@ -119,14 +108,6 @@ const LobbyPage: React.FC = () => {
       }
     };
 
-    const handleInputBlur = () => {
-      updateGameSettings();
-    };
-
-    const handleSliderMouseUp = () => {
-      updateGameSettings();
-    };
-
     return (
       <div className="slider-setting">
         <label>{label}</label>
@@ -138,8 +119,6 @@ const LobbyPage: React.FC = () => {
               max={max}
               value={value}
               onChange={handleSliderChange}
-              onMouseUp={handleSliderMouseUp}
-              onTouchEnd={handleSliderMouseUp}
               className="custom-slider"
             />
           </div>
@@ -147,7 +126,6 @@ const LobbyPage: React.FC = () => {
             type="number"
             value={value}
             onChange={handleInputChange}
-            onBlur={handleInputBlur}
             min={min}
             max={max}
             className="slider-input"
