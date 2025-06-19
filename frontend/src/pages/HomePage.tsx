@@ -59,7 +59,7 @@ const HomePage: React.FC = () => {
 
     return (
         <div className="home-container">
-            <h1>Jujutsu Kaisen: Heian Cards Clash</h1>
+            <h1>Jujutsu Kaisen: Heian Cards Peak</h1>
             <div className="menu-box">
                 <input
                     type="text"

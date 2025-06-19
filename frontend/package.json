@@ -1,8 +1,9 @@
 {
-  "name": "frontend",
+  "name": "jjk-heian-cards-peak",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "JJK: Heian Cards Peak - браузерная карточная игра по мотивам Магической битвы",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
