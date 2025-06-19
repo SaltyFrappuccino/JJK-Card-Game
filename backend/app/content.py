@@ -148,19 +148,19 @@ characters = [
         unique_cards=[
             Card(
                 id="sukuna_cleave",
-                name="Разрез",
+                name="Расщепление",
                 type=CardType.TECHNIQUE,
                 rarity=Rarity.UNCOMMON,
                 cost=4000,
-                description="Наносит 600 урона основной цели и 300 урона игроку слева от неё."
+                description="Наносит 600 урона основной цели и 300 урона игроку слева от неё.",
             ),
             Card(
                 id="sukuna_dismantle",
-                name="Расщепление",
+                name="Рассечение",
                 type=CardType.TECHNIQUE,
                 rarity=Rarity.RARE,
                 cost=16000,
-                description="Наносит 1600 урона одной цели."
+                description="Наносит 1600 урона одной цели.",
             ),
             Card(
                 id="sukuna_spiderweb",

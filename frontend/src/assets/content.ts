@@ -11,6 +11,12 @@ import yutaPortrait from './portraits/Yuta Okkotsu Portrait.png';
 // Basic
 import attackImg from './cards/basic cards/Attack.jpg';
 import shieldImg from './cards/basic cards/Shield.jpg';
+import chantsImg from './cards/basic cards/Chants.jpg';
+import concentrationImg from './cards/basic cards/concentration.webp';
+import simpleDomainImg from './cards/basic cards/Simple Domain.jpg';
+import blackFlashImg from './cards/basic cards/black flash.jpg';
+import fallingBlossomImg from './cards/basic cards/Falling Blossom Emotion.jpg';
+import reversedTechniqueImg from './cards/basic cards/Reversed Cursed Technique.jpg';
 
 // Gojo
 import gojoBlueImg from './cards/satoru/Blue.jpg';
@@ -18,6 +24,8 @@ import gojoRedImg from './cards/satoru/Reversal Red.jpg';
 import gojoPurpleImg from './cards/satoru/Hollow Purple.jpg';
 import gojoNoBlindfoldImg from './cards/satoru/no blindfold.jpg';
 import gojoDomainImg from './cards/satoru/Unlimited Void Domain Expansion.jpg';
+import infinityImg from './cards/satoru/Infinity.jpg';
+import bluePunchImg from './cards/satoru/blue punch.jpg';
 
 // Sukuna
 import sukunaCleaveImg from './cards/sukuna/Cleave.jpg';
@@ -26,15 +34,44 @@ import sukunaWebImg from './cards/sukuna/Cleave Web.jpg';
 import sukunaFuugaImg from './cards/sukuna/Kamino Fuuga.jpg';
 import sukunaDomainImg from './cards/sukuna/Malevolent Shrine Domain Expansion.jpg';
 
+// Mahito
+import mahitoSoulTouchImg from './cards/mahito/Idle_Transfiguration.webp';
+import mahitoSoulDistortionImg from './cards/mahito/Soul Deformation.webp';
+import mahitoSoulIsomerImg from './cards/mahito/Polymorphic_Soul_Isomer.webp';
+import mahitoBodyRepelImg from './cards/mahito/Body Repel.webp';
+import mahitoTrueFormImg from './cards/mahito/Mahito_achieves_his_true_form.webp';
+import mahitoDomainImg from './cards/mahito/Mahitos_Self-Embodiment_of_Perfection.webp';
+
+// Jogo
+import jogoEmberInsectsImg from './cards/jogo/Jogo_using_Ember_Insects.webp';
+import jogoVolcanoEruptionImg from './cards/jogo/Jogo_using_flames.webp';
+import jogoMaximumMeteorImg from './cards/jogo/Maximum_Meteor_crashing_into_Shibuya_29.webp';
+import jogoDomainImg from './cards/jogo/Jogos_Coffin_of_the_Iron_Mountain.webp';
+
+// Itadori
+import itadoriDivergentFistImg from './cards/itadori/Divergent_Fist.webp';
+import itadoriManjiKickImg from './cards/itadori/Manji kick.jpg';
+import itadoriDeepConcentrationImg from './cards/itadori/Deep Concentration.webp';
+import itadoriUnwaveringWillImg from './cards/itadori/Unbreakable Will.webp';
+
+// Yuta
+import yutaEnergyBladeImg from './cards/yuta/Yuta_Okkotsu_Better_Katana.webp';
+import yutaRikaManifestationImg from './cards/yuta/Rika_Full_Manifestation.webp';
+import yutaPureLoveImg from './cards/yuta/Pure_Love.webp';
+import yutaDomainImg from './cards/yuta/Authentic_Mutual_Love.webp';
+
 // IMPORTANT: ID's must be manually synchronized with backend/app/content.py
 
 export const COMMON_CARDS: Card[] = [
   { id: 'common_strike', name: 'Удар', type: 'ACTION', rarity: 'COMMON', cost: 0, description: 'Наносит 300 урона одной цели.', image: attackImg },
-  { id: 'common_shield', name: 'Защита', type: 'ACTION', rarity: 'COMMON', cost: 0, description: 'Вы получаете 300 блока на этот раунд.', image: shieldImg },
-  { id: 'common_concentration', name: 'Концентрация', type: 'ACTION', rarity: 'COMMON', cost: 0, description: 'Вы восстанавливаете от 5 до 15% вашего ПЭ.'},
-  { id: 'common_simple_domain', name: 'Простая Территория', type: 'TECHNIQUE', rarity: 'RARE', cost: 5000, description: 'Защищает вас от урона вражеской территории на 1 раунд.'},
+  { id: 'common_defense', name: 'Защита', type: 'ACTION', rarity: 'COMMON', cost: 0, description: 'Вы получаете 300 блока на этот раунд.', image: shieldImg },
+  { id: 'common_chant', name: 'Песнопения', type: 'ACTION', rarity: 'UNCOMMON', cost: 2000, description: 'Следующая ваша карта Техники в этом ходу будет стоить на 30% меньше.', image: chantsImg },
+  { id: 'common_concentration', name: 'Концентрация', type: 'ACTION', rarity: 'COMMON', cost: 0, description: 'Вы восстанавливаете от 5 до 15% вашего ПЭ.', image: concentrationImg },
+  { id: 'common_simple_domain', name: 'Простая Территория', type: 'TECHNIQUE', rarity: 'RARE', cost: 5000, description: 'Защищает вас от урона вражеской территории на 1 раунд.', image: simpleDomainImg },
   { id: 'common_black_flash_check', name: 'Чёрная Вспышка (Проверка)', type: 'ACTION', rarity: 'SPECIAL', cost: 0, description: "Проверка шанса на 'Чёрную Вспышку'. Базовый шанс: 1/6. При успехе вы берёте карту 'Чёрная Вспышка' в руку." },
-  { id: 'common_black_flash', name: 'Чёрная Вспышка', type: 'TECHNIQUE', rarity: 'SPECIAL', cost: 20000, description: "Наносит урон, в 2.5 раза превышающий ваш обычный 'Удар'. Этот урон игнорирует блок. Если вы находитесь под эффектом 'Концентрация', ваш следующий 'Удар' будет заменён на 'Чёрную Вспышку' со 100% шансом."},
+  { id: 'common_black_flash', name: 'Чёрная Вспышка', type: 'TECHNIQUE', rarity: 'SPECIAL', cost: 20000, description: "Наносит урон, в 2.5 раза превышающий ваш обычный 'Удар'. Этот урон игнорирует блок. Если вы находитесь под эффектом 'Концентрация', ваш следующий 'Удар' будет заменён на 'Чёрную Вспышку' со 100% шансом.", image: blackFlashImg},
+  { id: 'common_reverse_cursed_technique', name: 'Обратная проклятая техника', type: 'TECHNIQUE', rarity: 'EPIC', cost: 15000, description: 'Восстанавливает 25% от вашего максимального здоровья.', image: reversedTechniqueImg },
+  { id: 'common_falling_blossom_emotion', name: 'Эмоция Падающего Цветка', type: 'TECHNIQUE', rarity: 'EPIC', cost: 10000, description: 'Автоматически защищает вас от атаки Расширения Территории, отменяя её эффект.', image: fallingBlossomImg },
 ];
 
 export const ALL_CHARACTERS: Character[] = [
@@ -63,7 +100,8 @@ export const ALL_CHARACTERS: Character[] = [
         type: 'ACTION',
         rarity: 'UNCOMMON',
         cost: 0,
-        description: 'Наносит 300 урона. Этот урон игнорирует блок.'
+        description: 'Наносит 300 урона. Этот урон игнорирует блок.',
+        image: bluePunchImg
       },
       {
         id: "gojo_infinity",
@@ -71,7 +109,8 @@ export const ALL_CHARACTERS: Character[] = [
         type: 'TECHNIQUE',
         rarity: 'RARE',
         cost: 8000,
-        description: 'В течение 1 раунда все атаки одной цели, нацеленные на вас, автоматически отменяются. AoE-атаки наносят урон как обычно.'
+        description: 'В течение 1 раунда все атаки одной цели, нацеленные на вас, автоматически отменяются. AoE-атаки наносят урон как обычно.',
+        image: infinityImg
       },
       {
         id: "gojo_blue",
@@ -120,9 +159,9 @@ export const ALL_CHARACTERS: Character[] = [
     passive_ability_name: 'Жажда Развлечений',
     passive_ability_description: 'Если вам наносит урон противник, чей текущий % ХП больше, чем ваш, вы немедленно восстанавливаете 5% от вашего максимального запаса ПЭ (5000 ПЭ).',
     unique_cards: [
-      { id: "sukuna_cleave", name: 'Разрез', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 4000, description: 'Наносит 600 урона основной цели и 300 урона игроку слева от неё.', image: sukunaCleaveImg },
-      { id: "sukuna_dismantle", name: 'Расщепление', type: 'TECHNIQUE', rarity: 'RARE', cost: 16000, description: 'Наносит 1600 урона одной цели.', image: sukunaDismantleImg },
-      { id: 'sukuna_cleave_web', name: 'Расщепление: Паутина', type: 'TECHNIQUE', rarity: 'RARE', cost: 18000, description: 'Наносит 1000 урона основной цели и по 500 урона игрокам слева и справа от неё.', image: sukunaWebImg },
+      { id: "sukuna_cleave", name: 'Расщепление', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 4000, description: 'Наносит 600 урона основной цели и 300 урона игроку слева от неё.', image: sukunaDismantleImg },
+      { id: "sukuna_dismantle", name: 'Рассечение', type: 'TECHNIQUE', rarity: 'RARE', cost: 16000, description: 'Наносит 1600 урона одной цели.', image: sukunaCleaveImg },
+      { id: 'sukuna_spiderweb', name: 'Расщепление: Паутина', type: 'TECHNIQUE', rarity: 'RARE', cost: 18000, description: 'Наносит 1000 урона основной цели и по 500 урона игрокам слева и справа от неё.', image: sukunaWebImg },
       { id: "sukuna_kamino", name: 'Камино (Пламенная стрела)', type: 'TECHNIQUE', rarity: 'EPIC', cost: 20000, description: "Наносит 1800 урона. Если атака убивает цель, вы восстанавливаете 10 000 ПЭ.\\nСинергия: если активна 'Гробница Зла', наносит 1200 урона всем.", image: sukunaFuugaImg },
       { id: "sukuna_malevolent_shrine", name: 'Расширение Территории: Гробница Зла', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 40000, description: "Накладывает на всех оппонентов эффект, который в конце их хода наносит им 1500 урона. Длится 3 раунда. Урон игнорируется, если у цели активна 'Простая Территория'.", image: sukunaDomainImg },
     ]
@@ -136,19 +175,20 @@ export const ALL_CHARACTERS: Character[] = [
     passive_ability_name: 'Праздная Трансфигурация',
     passive_ability_description: "Карта 'Удар' наносит вам 0 урона. Вы начинаете игру с 0 Искажённых Душ. Каждые 2 своих хода вы гарантированно получаете карту 'Касание Души' в руку.",
     unique_cards: [
-      { id: "mahito_soul_touch", name: 'Касание Души', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 3000, description: 'Наносит по 250 урона игрокам слева и справа от вас (игнорирует блок). За каждого пораженного игрока вы получаете 1 Искажённую Душу.' },
-      { id: "mahito_soul_distortion", name: 'Искажение Души', type: 'TECHNIQUE', rarity: 'RARE', cost: 8000, description: 'Цель сбрасывает 1 случайную карту из руки.' },
+      { id: "mahito_soul_touch", name: 'Касание Души', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 3000, description: 'Наносит по 250 урона игрокам слева и справа от вас (игнорирует блок). За каждого пораженного игрока вы получаете 1 Искажённую Душу.', image: mahitoSoulTouchImg },
+      { id: "mahito_soul_distortion", name: 'Искажение Души', type: 'TECHNIQUE', rarity: 'RARE', cost: 8000, description: 'Цель сбрасывает 1 случайную карту из руки.', image: mahitoSoulDistortionImg },
       { 
         id: "mahito_polymorphic_soul_isomer", 
         name: "Полиморфная Изомерная Душа", 
         type: 'TECHNIQUE', 
         rarity: 'RARE', 
         cost: 0, 
-        description: "Стоимость: 1 Искажённая Душа. Дает 500 блока. Игроку, который наносит удар, снимающий этот блок, наносится 500 урона."
+        description: "Стоимость: 1 Искажённая Душа. Дает 500 блока. Игроку, который наносит удар, снимающий этот блок, наносится 500 урона.",
+        image: mahitoSoulIsomerImg
       },
-      { id: "mahito_body_repel", name: 'Отталкивание Тела', type: 'TECHNIQUE', rarity: 'EPIC', cost: 0, description: 'Стоимость: 3 Искажённые Души. Наносит 1400 урона одной цели. Если у цели есть блок, урон увеличивается на 50%.'},
-      { id: "mahito_true_form", name: 'Искажённое Тело Изорённых Убийств', type: 'TECHNIQUE', rarity: 'LEGENDARY', cost: 30000, description: 'Вы получаете постоянный эффект: урон от вражеских "Ударов" по вам снижен на 50%, вы получаете 500 блока в начале раунда, а ваш "Удар" наносит урон в 3 раза больше (900).\nУсловие: вы должны успешно использовать "Чёрную Вспышку".'},
-      { id: "mahito_self_embodiment_of_perfection", name: 'Расширение Территории: Самовоплощение Совершенства', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 35000, description: "На 3 раунда все противники получают эффект 'Искажение души': их блок аннулируется, и в начале их хода они сбрасывают 1 случайную карту. В начале вашего хода вы получаете 1 Искажённую Душу за каждого противника под действием этой территории." },
+      { id: "mahito_body_repel", name: 'Отталкивание Тела', type: 'TECHNIQUE', rarity: 'EPIC', cost: 0, description: 'Стоимость: 3 Искажённые Души. Наносит 1400 урона одной цели. Если у цели есть блок, урон увеличивается на 50%.', image: mahitoBodyRepelImg },
+      { id: "mahito_true_form", name: 'Искажённое Тело Изорённых Убийств', type: 'TECHNIQUE', rarity: 'LEGENDARY', cost: 30000, description: 'Вы получаете постоянный эффект: урон от вражеских "Ударов" по вам снижен на 50%, вы получаете 500 блока в начале раунда, а ваш "Удар" наносит урон в 3 раза больше (900).\nУсловие: вы должны успешно использовать "Чёрную Вспышку".', image: mahitoTrueFormImg },
+      { id: "mahito_self_embodiment_of_perfection", name: 'Расширение Территории: Самовоплощение Совершенства', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 35000, description: "На 3 раунда все противники получают эффект 'Искажение души': их блок аннулируется, и в начале их хода они сбрасывают 1 случайную карту. В начале вашего хода вы получаете 1 Искажённую Душу за каждого противника под действием этой территории.", image: mahitoDomainImg },
     ]
   },
   {
@@ -160,10 +200,10 @@ export const ALL_CHARACTERS: Character[] = [
     passive_ability_name: 'Сверхчеловеческая Сила',
     passive_ability_description: "Ваши 'Удары' наносят +150 урона. Каждый раз, когда вы играете карту 'Удар', вы восстанавливаете 1000 ПЭ. Ваш базовый шанс 'Чёрной Вспышки' равен 2/6. Когда на вас есть эффект \"Зона\", ваш шанс становится 3/6.",
     unique_cards: [
-      { id: "itadori_divergent_fist", name: 'Кулак Дивергента', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 2000, description: 'Наносит 400 урона. В начале следующего хода цели наносит ещё 200.' },
-      { id: "itadori_manji_kick", name: 'Манджи-Кик', type: 'TECHNIQUE', rarity: 'RARE', cost: 6000, description: 'Наносит 600 урона цели. Следующая атакующая карта (любая, кроме РТ), которую эта цель сыграет против вас, будет отменена.' },
-      { id: "itadori_deep_concentration", name: 'Глубокая Концентрация', type: 'TECHNIQUE', rarity: 'EPIC', cost: 18000, description: 'Вы получаете эффект "Концентрация" на 2 хода. Следующая ваша "Чёрная Вспышка", сыгранная пока эффект активен, гарантированно сработает.' },
-      { id: "itadori_unwavering_will", name: 'Несгибаемая Воля', type: 'TECHNIQUE', rarity: 'LEGENDARY', cost: 25000, description: 'Получаете эффект "Последний Бой" на 5 ваших ходов. Пока он активен, ваше ХП может опускаться до -3500. Как только эффект заканчивается, вы проигрываете.' },
+      { id: "itadori_divergent_fist", name: 'Кулак Дивергента', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 2000, description: 'Наносит 400 урона. В начале следующего хода цели наносит ещё 200.', image: itadoriDivergentFistImg },
+      { id: "itadori_manji_kick", name: 'Манджи-Кик', type: 'TECHNIQUE', rarity: 'RARE', cost: 6000, description: 'Наносит 600 урона цели. Следующая атакующая карта (любая, кроме РТ), которую эта цель сыграет против вас, будет отменена.', image: itadoriManjiKickImg },
+      { id: "itadori_deep_concentration", name: 'Глубокая Концентрация', type: 'TECHNIQUE', rarity: 'EPIC', cost: 18000, description: 'Вы получаете эффект "Концентрация" на 2 хода. Следующая ваша "Чёрная Вспышка", сыгранная пока эффект активен, гарантированно сработает.', image: itadoriDeepConcentrationImg },
+      { id: "itadori_unwavering_will", name: 'Несгибаемая Воля', type: 'TECHNIQUE', rarity: 'LEGENDARY', cost: 25000, description: 'Получаете эффект "Последний Бой" на 5 ваших ходов. Пока он активен, ваше ХП может опускаться до -3500. Как только эффект заканчивается, вы проигрываете.', image: itadoriUnwaveringWillImg },
     ]
   },
   {
@@ -175,10 +215,10 @@ export const ALL_CHARACTERS: Character[] = [
     passive_ability_name: 'Прикосновение Лавы',
     passive_ability_description: "Каждый раз, когда вы наносите урон картой Техники, цель получает эффект 'Горение' на 2 раунда (100 урона в начале её хода).",
     unique_cards: [
-      { id: "jogo_ember_insects", name: 'Сикигами: Угольки', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 4000, description: 'Атакует до 3 целей, нанося каждой по 300 урона.' },
-      { id: "jogo_volcano_eruption", name: 'Извержение Вулкана', type: 'TECHNIQUE', rarity: 'RARE', cost: 9000, description: 'Наносит 600 урона всем противникам.' },
-      { id: "jogo_maximum_meteor", name: 'Максимум: Метеор', type: 'TECHNIQUE', rarity: 'EPIC', cost: 20000, description: 'Наносит 2000 урона основной цели и 500 урона игрокам слева и справа от нее.' },
-      { id: "jogo_coffin_of_the_iron_mountain", name: 'Расширение Территории: Гроб Стальной Горы', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 35000, description: 'В течение 3 раундов в начале хода каждого противника он получает 800 урона от жара.' },
+      { id: "jogo_ember_insects", name: 'Сикигами: Угольки', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 4000, description: 'Атакует до 3 целей, нанося каждой по 300 урона.', image: jogoEmberInsectsImg },
+      { id: "jogo_volcano_eruption", name: 'Извержение Вулкана', type: 'TECHNIQUE', rarity: 'RARE', cost: 9000, description: 'Наносит 600 урона всем противникам.', image: jogoVolcanoEruptionImg },
+      { id: "jogo_maximum_meteor", name: 'Максимум: Метеор', type: 'TECHNIQUE', rarity: 'EPIC', cost: 20000, description: 'Наносит 2000 урона основной цели и 500 урона игрокам слева и справа от нее.', image: jogoMaximumMeteorImg },
+      { id: "jogo_coffin_of_the_iron_mountain", name: 'Расширение Территории: Гроб Стальной Горы', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 35000, description: 'В течение 3 раундов в начале хода каждого противника он получает 800 урона от жара.', image: jogoDomainImg },
     ]
   },
   {
@@ -190,10 +230,10 @@ export const ALL_CHARACTERS: Character[] = [
     passive_ability_name: 'Копирование и Рика',
     passive_ability_description: 'Когда противник наносит вам урон картой Техники, копия этой карты добавляется в ваш сброс (стоимость х1.25). Дополнительно, в конце вашего хода Рика наносит 250 урона случайному противнику.',
     unique_cards: [
-      { id: "yuta_energy_blade", name: 'Клинок, Усиленный Энергией', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 3000, description: 'Наносит 500 урона одной цели.' },
-      { id: "yuta_rika_manifestation", name: 'Проявление: Рика', type: 'TECHNIQUE', rarity: 'EPIC', cost: 25000, description: 'На 3 ваших хода урон от пассивной способности "Рика" увеличивается до 1000 и наносится противникам слева и справа от вас.' },
-      { id: "yuta_pure_love", name: 'Чистая Любовь', type: 'TECHNIQUE', rarity: 'LEGENDARY', cost: 22000, description: "Наносит 2500 урона одной цели. После использования вы получаете эффект 'Откат Рики' на 2 раунда, который отключает вашу пассивную способность и не позволяет использовать 'Чистую Любовь' и 'Проявление: Рика'." },
-      { id: "yuta_true_mutual_love", name: 'Расширение Территории: Истинная и Взаимная Любовь', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 45000, description: 'На 3 раунда стоимость всех скопированных карт техник в вашей руке и колоде делится на 4 (округляется вверх). Ваша максимальная рука увеличивается до 8 карт.' },
+      { id: "yuta_energy_blade", name: 'Клинок, Усиленный Энергией', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 3000, description: 'Наносит 500 урона одной цели.', image: yutaEnergyBladeImg },
+      { id: "yuta_rika_manifestation", name: 'Проявление: Рика', type: 'TECHNIQUE', rarity: 'EPIC', cost: 25000, description: 'На 3 ваших хода урон от пассивной способности "Рика" увеличивается до 1000 и наносится противникам слева и справа от вас.', image: yutaRikaManifestationImg },
+      { id: "yuta_pure_love", name: 'Чистая Любовь', type: 'TECHNIQUE', rarity: 'LEGENDARY', cost: 22000, description: "Наносит 2500 урона одной цели. После использования вы получаете эффект 'Откат Рики' на 2 раунда, который отключает вашу пассивную способность и не позволяет использовать 'Чистую Любовь' и 'Проявление: Рика'.", image: yutaPureLoveImg },
+      { id: "yuta_true_mutual_love", name: 'Расширение Территории: Истинная и Взаимная Любовь', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 45000, description: 'На 3 раунда стоимость всех скопированных карт техник в вашей руке и колоде делится на 4 (округляется вверх). Ваша максимальная рука увеличивается до 8 карт.', image: yutaDomainImg },
     ]
   },
 ];
