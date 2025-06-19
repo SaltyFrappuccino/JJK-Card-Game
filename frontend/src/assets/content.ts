@@ -186,10 +186,15 @@ export const ALL_CHARACTERS: Character[] = [
     accent_color: CHARACTER_ACCENT_COLORS.mahito,
     portrait: mahitoPortrait,
     passive_ability_name: 'Праздная Трансфигурация',
-    passive_ability_description: "Карта 'Удар' наносит вам 0 урона. Вы начинаете игру с 0 Искажённых Душ. Каждые 2 своих хода вы гарантированно получаете карту 'Касание Души' в руку.",
+    passive_ability_description: "Карта 'Удар' наносит вам 0 урона. Вы начинаете игру с 0 Искажённых Душ. Каждые 2 своих хода вы гарантированно получаете карту 'Касание Души' в руку. Карты Трансформации можно применять как на себя, так и на любого другого игрока.",
     unique_cards: [
       { id: "mahito_soul_touch", name: 'Касание Души', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 3000, description: 'Наносит по 250 урона игрокам слева и справа от вас (игнорирует блок). За каждого пораженного игрока вы получаете 1 Искажённую Душу.', image: mahitoSoulTouchImg },
-      { id: "mahito_soul_distortion", name: 'Искажение Души', type: 'TECHNIQUE', rarity: 'RARE', cost: 8000, description: 'Цель сбрасывает 1 случайную карту из руки.', image: mahitoSoulDistortionImg },
+      { id: "mahito_transformation_nimble_legs", name: 'Трансформация: Ловкие Ноги', type: 'TECHNIQUE', rarity: 'RARE', cost: 0, description: 'Стоимость: 1 Искажённая Душа.\nЦель: Вы или другой игрок.\nЦель получает эффект "Ловкие Ноги" на 2 раунда.\n\nЭффект "Ловкие Ноги": Шанс 25% полностью уклониться от любой атаки по одной цели (не работает против AoE и урона от РТ).', image: mahitoSoulDistortionImg },
+      { id: "mahito_transformation_big_hands", name: 'Трансформация: Большие Руки', type: 'TECHNIQUE', rarity: 'RARE', cost: 0, description: 'Стоимость: 1 Искажённая Душа.\nЦель: Вы или другой игрок.\nЦель получает эффект "Большие Руки" на 2 раунда.\n\nЭффект "Большие Руки": Максимальный размер руки цели увеличивается на 1.', image: mahitoBodyRepelImg },
+      { id: "mahito_transformation_long_arms", name: 'Трансформация: Длинные Руки', type: 'TECHNIQUE', rarity: 'EPIC', cost: 0, description: 'Стоимость: 2 Искажённые Души.\nЦель: Вы или другой игрок.\nЦель получает эффект "Длинные Руки" на 2 раунда.\n\nЭффект "Длинные Руки": Каждый раз, когда другой игрок разыгрывает на вас карту, есть шанс 25% получить копию этой карты себе в руку (стоимость копии х1.5).', image: mahitoTrueFormImg },
+      { id: "mahito_soul_distortion", name: 'Искажение Души', type: 'TECHNIQUE', rarity: 'RARE', cost: 8000, description: 'Цель: Один противник.\nЦель немедленно сбрасывает 1 случайную карту из руки.', image: mahitoSoulDistortionImg },
+      { id: "mahito_hand_distortion", name: 'Искажение Рук', type: 'TECHNIQUE', rarity: 'RARE', cost: 0, description: 'Стоимость: 1 Искажённая Душа.\nЦель: Один противник.\nЦель получает эффект "Искажение Рук" на 2 раунда.\n\nЭффект "Искажение Рук": Максимальный размер руки цели уменьшен на 1. В начале своего хода цель, если у нее карт больше нового лимита, должна сбросить лишние.', image: mahitoSoulIsomerImg },
+      { id: "mahito_distortion_crosseyes", name: 'Искажение: Косоглазие', type: 'TECHNIQUE', rarity: 'EPIC', cost: 0, description: 'Стоимость: 2 Искажённые Души.\nЦель: Один противник.\nВы получаете на себя эффект "Косоглазие" на 2 раунда, привязанный к этой цели.\n\nЭффект "Косоглазие": Каждый раз, когда вас атакуют, есть шанс 25%, что атака будет перенаправлена на цель, на которую вы наложили этот эффект.', image: mahitoTrueFormImg },
       { 
         id: "mahito_polymorphic_soul_isomer", 
         name: "Полиморфная Изомерная Душа", 
@@ -201,7 +206,7 @@ export const ALL_CHARACTERS: Character[] = [
       },
       { id: "mahito_body_repel", name: 'Отталкивание Тела', type: 'TECHNIQUE', rarity: 'EPIC', cost: 0, description: 'Стоимость: 3 Искажённые Души. Наносит 1400 урона одной цели. Если у цели есть блок, урон увеличивается на 50%.', image: mahitoBodyRepelImg },
       { id: "mahito_true_form", name: 'Искажённое Тело Изорённых Убийств', type: 'TECHNIQUE', rarity: 'LEGENDARY', cost: 30000, description: 'Вы получаете постоянный эффект: урон от вражеских "Ударов" по вам снижен на 50%, вы получаете 500 блока в начале раунда, а ваш "Удар" наносит урон в 3 раза больше (900).\nУсловие: вы должны успешно использовать "Чёрную Вспышку".', image: mahitoTrueFormImg },
-      { id: "mahito_self_embodiment_of_perfection", name: 'Расширение Территории: Самовоплощение Совершенства', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 35000, description: "На 3 раунда все противники получают эффект 'Искажение души': их блок аннулируется, и в начале их хода они сбрасывают 1 случайную карту. В начале вашего хода вы получаете 1 Искажённую Душу за каждого противника под действием этой территории.", image: mahitoDomainImg },
+      { id: "mahito_self_embodiment_of_perfection", name: 'Расширение Территории: Самовоплощение Совершенства', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 35000, description: "На 3 раунда все противники получают эффект 'Искажение души': их блок аннулируется и на них накладывается эффект 'Искажение Рук'. В начале вашего хода вы получаете 1 Искажённую Душу за каждого противника под действием этой территории.", image: mahitoDomainImg },
     ]
   },
   {

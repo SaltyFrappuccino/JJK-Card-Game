@@ -15,6 +15,11 @@ EFFECT_ID_SMOLDERING = "jogo_smoldering"
 EFFECT_ID_BURNING = "jogo_burning"
 EFFECT_ID_INFERNO = "jogo_inferno"
 EFFECT_ID_PYROCLASM = "jogo_pyroclasm"
+EFFECT_ID_NIMBLE_LEGS = "mahito_nimble_legs"
+EFFECT_ID_BIG_HANDS = "mahito_big_hands"
+EFFECT_ID_LONG_ARMS = "mahito_long_arms"
+EFFECT_ID_HAND_DISTORTION = "mahito_hand_distortion"
+EFFECT_ID_CROSSEYES = "mahito_crosseyes"
 
 effect_types = {
     "common_chant": EffectType.POSITIVE,
@@ -44,7 +49,12 @@ effect_types = {
     "gojo_blue_effect": EffectType.POSITIVE,
     "gojo_red_effect": EffectType.POSITIVE,
     "mahito_polymorphic_soul_isomer": EffectType.POSITIVE,
-    "manji_kick_counter": EffectType.POSITIVE
+    "manji_kick_counter": EffectType.POSITIVE,
+    "mahito_nimble_legs": EffectType.POSITIVE,
+    "mahito_big_hands": EffectType.POSITIVE,
+    "mahito_long_arms": EffectType.POSITIVE,
+    "mahito_hand_distortion": EffectType.NEGATIVE,
+    "mahito_crosseyes": EffectType.POSITIVE
 }
 
 class GameManager:
@@ -164,6 +174,14 @@ class GameManager:
         if card_to_play.id == "mahito_body_repel":
             if player.distorted_souls < 3: raise GameException("Недостаточно Искажённых Душ.")
             player.distorted_souls -= 3
+
+        if card_to_play.id in ["mahito_transformation_nimble_legs", "mahito_transformation_big_hands", "mahito_hand_distortion"]:
+            if player.distorted_souls < 1: raise GameException("Недостаточно Искажённых Душ.")
+            player.distorted_souls -= 1
+
+        if card_to_play.id in ["mahito_transformation_long_arms", "mahito_distortion_crosseyes"]:
+            if player.distorted_souls < 2: raise GameException("Недостаточно Искажённых Душ.")
+            player.distorted_souls -= 2
 
         # --- Conditional Cards ---
         if card_to_play.id == "gojo_purple":
@@ -307,6 +325,12 @@ class GameManager:
                 if p.character and p.character.id == "gojo_satoru": max_hand = 6
                 if any(e.name == EFFECT_ID_SOUL_DISTORTION for e in p.effects): max_hand -= 1
                 if any(e.name == "yuta_true_mutual_love" for e in p.effects): max_hand = 8
+                
+                # Apply Big Hands effect
+                if any(e.name == EFFECT_ID_BIG_HANDS for e in p.effects): max_hand += 1
+                
+                # Apply Hand Distortion effect
+                if any(e.name == EFFECT_ID_HAND_DISTORTION for e in p.effects): max_hand -= 1
                 
                 self._draw_cards(p, max_hand)
                 if p.character:
@@ -518,6 +542,18 @@ class GameManager:
                 player.energy = min(player.character.max_energy, player.energy + recovery)
                 game.game_log.append(f"{player.nickname} восстанавливает {recovery} ПЭ от эффекта 'Зона'.")
 
+            # Hand Distortion effect processing
+            if effect.name == EFFECT_ID_HAND_DISTORTION:
+                current_hand_size = len(player.hand)
+                max_hand_size = 5 - 1  # Normal size minus distortion
+                if current_hand_size > max_hand_size:
+                    excess_cards = current_hand_size - max_hand_size
+                    cards_to_discard = random.sample(player.hand, excess_cards)
+                    for card in cards_to_discard:
+                        player.hand.remove(card)
+                        player.discard_pile.append(card)
+                    game.game_log.append(f"{player.nickname} вынужден сбросить {excess_cards} карт из-за 'Искажения Рук'.")
+
     def _process_end_of_turn_effects(self, game: Game, player: Player):
         effects_to_remove = []
         for effect in player.effects:
@@ -558,6 +594,15 @@ class GameManager:
                 target.discard_pile.append(copied_card)
                 game.game_log.append(f"Юта Оккоцу скопировал {card.name}!")
 
+        # Long Arms effect - copy cards targeted at you
+        if not is_effect_damage and any(e.name == EFFECT_ID_LONG_ARMS for e in target.effects) and card:
+            if random.randint(1, 4) == 1:  # 25% chance
+                copied_card = card.copy(deep=True)
+                copied_card.cost = int(copied_card.cost * 1.5)
+                copied_card.is_copied = True
+                target.hand.append(copied_card)
+                game.game_log.append(f"{target.nickname} получает копию {card.name} благодаря 'Длинным Рукам'!")
+
         # Sukuna Passive (Energy)
         if target.character and target.character.id == "sukuna_ryomen" and \
            source_player and source_player.character and source_player.hp and target.character and target.hp and \
@@ -584,6 +629,22 @@ class GameManager:
         # Mahito's "True Body" damage reduction
         if any(e.name == "mahito_true_form" for e in target.effects) and card and card.id == "common_strike":
             actual_damage = int(actual_damage * 0.5)
+
+        # Nimble Legs dodge chance (only for single target attacks)
+        if any(e.name == EFFECT_ID_NIMBLE_LEGS for e in target.effects) and not is_effect_damage and card:
+            if random.randint(1, 4) == 1:  # 25% chance
+                game.game_log.append(f"{target.nickname} уклоняется от атаки благодаря 'Ловким Ногам'!")
+                return
+
+        # Crosseyes redirect chance
+        if source_player and any(e.name == EFFECT_ID_CROSSEYES for e in source_player.effects) and not is_effect_damage:
+            crosseyes_effect = next((e for e in source_player.effects if e.name == EFFECT_ID_CROSSEYES), None)
+            if crosseyes_effect and crosseyes_effect.target_id and random.randint(1, 4) == 1:  # 25% chance
+                redirect_target = self._find_player(game, crosseyes_effect.target_id)
+                if redirect_target and redirect_target.status == PlayerStatus.ALIVE:
+                    game.game_log.append(f"Атака перенаправлена на {redirect_target.nickname} из-за 'Косоглазия'!")
+                    self._deal_damage(game, source_player, redirect_target, final_damage, ignores_block, card, card_type, is_effect_damage)
+                    return
 
         if not ignores_block:
             blocked_damage = min(target.block, actual_damage)
@@ -894,7 +955,45 @@ class GameManager:
         return game
 
     def _effect_samovoploshchenie_sovershenstva(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
-        self._apply_domain_to_opponents(game, player, EFFECT_ID_SOUL_DISTORTION, 3)
+        # Apply both soul distortion effects: block nullification and hand distortion
+        opponents = [p for p in game.players if p.id != player.id]
+        for op in opponents:
+            # Remove all block
+            op.block = 0
+            # Apply hand distortion effect
+            self._apply_effect(game, player, op, EFFECT_ID_HAND_DISTORTION, 3)
+            self._apply_effect(game, player, op, EFFECT_ID_SOUL_DISTORTION, 3)
+        return game
+
+    def _effect_transformation_nimble_legs(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
+        target = self._find_player(game, target_id) if target_id else player
+        if not target: return game
+        self._apply_effect(game, player, target, EFFECT_ID_NIMBLE_LEGS, 2)
+        return game
+
+    def _effect_transformation_big_hands(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
+        target = self._find_player(game, target_id) if target_id else player
+        if not target: return game
+        self._apply_effect(game, player, target, EFFECT_ID_BIG_HANDS, 2)
+        return game
+
+    def _effect_transformation_long_arms(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
+        target = self._find_player(game, target_id) if target_id else player
+        if not target: return game
+        self._apply_effect(game, player, target, EFFECT_ID_LONG_ARMS, 2)
+        return game
+
+    def _effect_hand_distortion(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
+        target = self._find_player(game, target_id)
+        if not target: return game
+        self._apply_effect(game, player, target, EFFECT_ID_HAND_DISTORTION, 2)
+        return game
+
+    def _effect_distortion_crosseyes(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
+        target = self._find_player(game, target_id)
+        if not target: return game
+        # Apply crosseyes effect to the caster (player), but target the chosen enemy
+        self._apply_effect(game, player, player, EFFECT_ID_CROSSEYES, 2, target_id=target_id)
         return game
     
     def _effect_kulak_divergenta(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
@@ -1104,6 +1203,11 @@ class GameManager:
             "mahito_body_repel": self._effect_ottalkivanie_tela,
             "mahito_true_form": self._effect_istinnoe_telo,
             "mahito_self_embodiment_of_perfection": self._effect_samovoploshchenie_sovershenstva,
+            "mahito_transformation_nimble_legs": self._effect_transformation_nimble_legs,
+            "mahito_transformation_big_hands": self._effect_transformation_big_hands,
+            "mahito_transformation_long_arms": self._effect_transformation_long_arms,
+            "mahito_hand_distortion": self._effect_hand_distortion,
+            "mahito_distortion_crosseyes": self._effect_distortion_crosseyes,
             "itadori_divergent_fist": self._effect_kulak_divergenta,
             "itadori_manji_kick": self._effect_manji_kick,
             "itadori_slaughter_demon": self._effect_zakhod_s_razvorota,
