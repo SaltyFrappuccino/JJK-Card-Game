@@ -31,13 +31,16 @@ const SliderSetting: React.FC<{
   max: number;
   unit: string;
   onChange: (value: number) => void;
-}> = React.memo(({ label, value, min, max, unit, onChange }) => {
+  disabled?: boolean;
+}> = React.memo(({ label, value, min, max, unit, onChange, disabled = false }) => {
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
     const newValue = parseInt(e.target.value);
     onChange(newValue);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
     const newValue = parseInt(e.target.value);
     if (!isNaN(newValue) && newValue >= min && newValue <= max) {
       onChange(newValue);
@@ -45,7 +48,7 @@ const SliderSetting: React.FC<{
   };
 
   return (
-    <div className="slider-setting">
+    <div className={`slider-setting ${disabled ? 'disabled' : ''}`}>
       <label>{label}</label>
       <div className="slider-container">
         <div className="slider-wrapper">
@@ -56,6 +59,7 @@ const SliderSetting: React.FC<{
             value={value}
             onChange={handleSliderChange}
             className="custom-slider"
+            disabled={disabled}
           />
         </div>
         <input
@@ -65,9 +69,11 @@ const SliderSetting: React.FC<{
           min={min}
           max={max}
           className="slider-input"
+          disabled={disabled}
         />
         <span className="slider-unit">{unit}</span>
       </div>
+      {disabled && <div className="disabled-overlay">Только хост может изменять настройки</div>}
     </div>
   );
 });
@@ -78,25 +84,53 @@ const LobbyPage: React.FC = () => {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [isStarting, setIsStarting] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [hpPercentage, setHpPercentage] = useState(100);
-  const [maxEnergyPercentage, setMaxEnergyPercentage] = useState(100);
-  const [startingEnergyPercentage, setStartingEnergyPercentage] = useState(100);
   const navigate = useNavigate();
 
   const isHost = lobby?.host_id === player?.id;
 
-  // Создаем стабильные callback функции
-  const handleHpChange = useCallback((value: number) => {
-    setHpPercentage(value);
-  }, []);
+  // Получаем настройки из лобби вместо локального состояния
+  const hpPercentage = lobby?.game_settings?.hp_percentage || 100;
+  const maxEnergyPercentage = lobby?.game_settings?.max_energy_percentage || 100;
+  const startingEnergyPercentage = lobby?.game_settings?.starting_energy_percentage || 100;
+  const currentBackground = lobby?.game_settings?.background || selectedBackground || "none";
 
-  const handleMaxEnergyChange = useCallback((value: number) => {
-    setMaxEnergyPercentage(value);
-  }, []);
+  // Создаем callback функции для изменения настроек (только для хоста)
+  const handleHpChange = useCallback(async (value: number) => {
+    if (!isHost || !lobby || !player?.id) return;
+    try {
+      await api.updateGameSettings(lobby.id, player.id, value, maxEnergyPercentage, startingEnergyPercentage, currentBackground);
+    } catch (error: any) {
+      setError(error.response?.data?.detail || 'Не удалось обновить настройки.');
+    }
+  }, [isHost, lobby, player?.id, maxEnergyPercentage, startingEnergyPercentage, currentBackground, setError]);
 
-  const handleStartingEnergyChange = useCallback((value: number) => {
-    setStartingEnergyPercentage(value);
-  }, []);
+  const handleMaxEnergyChange = useCallback(async (value: number) => {
+    if (!isHost || !lobby || !player?.id) return;
+    try {
+      await api.updateGameSettings(lobby.id, player.id, hpPercentage, value, startingEnergyPercentage, currentBackground);
+    } catch (error: any) {
+      setError(error.response?.data?.detail || 'Не удалось обновить настройки.');
+    }
+  }, [isHost, lobby, player?.id, hpPercentage, startingEnergyPercentage, currentBackground, setError]);
+
+  const handleStartingEnergyChange = useCallback(async (value: number) => {
+    if (!isHost || !lobby || !player?.id) return;
+    try {
+      await api.updateGameSettings(lobby.id, player.id, hpPercentage, maxEnergyPercentage, value, currentBackground);
+    } catch (error: any) {
+      setError(error.response?.data?.detail || 'Не удалось обновить настройки.');
+    }
+  }, [isHost, lobby, player?.id, hpPercentage, maxEnergyPercentage, currentBackground, setError]);
+
+  const handleBackgroundChange = useCallback(async (backgroundId: string) => {
+    if (!isHost || !lobby || !player?.id) return;
+    try {
+      await api.updateGameSettings(lobby.id, player.id, hpPercentage, maxEnergyPercentage, startingEnergyPercentage, backgroundId);
+      setSelectedBackground(backgroundId);
+    } catch (error: any) {
+      setError(error.response?.data?.detail || 'Не удалось обновить настройки.');
+    }
+  }, [isHost, lobby, player?.id, hpPercentage, maxEnergyPercentage, startingEnergyPercentage, setSelectedBackground, setError]);
 
   const handleKickPlayer = async (playerIdToKick: string) => {
     if (!lobby || !player?.id || !isHost) return;
@@ -132,12 +166,7 @@ const LobbyPage: React.FC = () => {
     if (!lobby || !player?.id) return;
     setIsStarting(true);
     try {
-      // Сначала обновляем настройки игры
-      if (isHost) {
-        await api.updateGameSettings(lobby.id, player.id, hpPercentage, maxEnergyPercentage, startingEnergyPercentage);
-      }
-      
-      // Затем начинаем игру
+      // Начинаем игру (настройки уже синхронизированы в реальном времени)
       await api.startGame(lobby.id, player.id);
       // Navigation will be handled by the 'game_started' socket event in useSocket hook
     } catch (error: any) {
@@ -223,66 +252,71 @@ const LobbyPage: React.FC = () => {
         </button>
       )}
 
-      {isHost && (
-        <div className="host-controls">
-          <button className="settings-btn" onClick={() => setShowSettings(!showSettings)}>
-            {showSettings ? 'Скрыть настройки' : 'Настройки'}
-          </button>
-          
-          {showSettings && (
-            <div className="game-settings">
-              <h3>Настройки игры</h3>
-              
-              <div className="setting-group">
-                <label>Фон игры:</label>
-                <div className="background-options">
-                  {BACKGROUND_OPTIONS.map(bg => (
-                    <div 
-                      key={bg.id}
-                      className={`background-option ${selectedBackground === bg.id ? 'selected' : ''}`}
-                      onClick={() => setSelectedBackground(bg.id)}
-                    >
-                      {bg.image ? (
-                        <img src={bg.image} alt={bg.name} className="background-preview" />
-                      ) : (
-                        <div className="no-background-preview">Без фона</div>
-                      )}
-                      <span className="background-name">{bg.name}</span>
-                    </div>
-                  ))}
-                </div>
+      <div className="game-settings-container">
+        <button className="settings-btn" onClick={() => setShowSettings(!showSettings)}>
+          {showSettings ? 'Скрыть настройки' : `${isHost ? 'Настройки' : 'Посмотреть настройки'}`}
+        </button>
+        
+        {showSettings && (
+          <div className="game-settings">
+            <h3>Настройки игры {!isHost && '(только просмотр)'}</h3>
+            
+            <div className="setting-group">
+              <label>Фон игры:</label>
+              <div className={`background-options ${!isHost ? 'disabled' : ''}`}>
+                {BACKGROUND_OPTIONS.map(bg => (
+                  <div 
+                    key={bg.id}
+                    className={`background-option ${currentBackground === bg.id ? 'selected' : ''} ${!isHost ? 'disabled' : ''}`}
+                    onClick={() => isHost && handleBackgroundChange(bg.id)}
+                  >
+                    {bg.image ? (
+                      <img src={bg.image} alt={bg.name} className="background-preview" />
+                    ) : (
+                      <div className="no-background-preview">Без фона</div>
+                    )}
+                    <span className="background-name">{bg.name}</span>
+                    {bg.id === currentBackground && !isHost && (
+                      <div className="current-setting-indicator">Текущий</div>
+                    )}
+                  </div>
+                ))}
               </div>
-
-              <SliderSetting
-                label="Процент ХП"
-                value={hpPercentage}
-                min={1}
-                max={300}
-                unit="%"
-                onChange={handleHpChange}
-              />
-
-              <SliderSetting
-                label="Максимальный ПЭ"
-                value={maxEnergyPercentage}
-                min={1}
-                max={300}
-                unit="%"
-                onChange={handleMaxEnergyChange}
-              />
-
-              <SliderSetting
-                label="Начальный ПЭ"
-                value={startingEnergyPercentage}
-                min={0}
-                max={100}
-                unit="%"
-                onChange={handleStartingEnergyChange}
-              />
+              {!isHost && <div className="setting-note">Хост выбрал: {BACKGROUND_OPTIONS.find(bg => bg.id === currentBackground)?.name || 'Без фона'}</div>}
             </div>
-          )}
-        </div>
-      )}
+
+            <SliderSetting
+              label="Процент ХП"
+              value={hpPercentage}
+              min={1}
+              max={300}
+              unit="%"
+              onChange={handleHpChange}
+              disabled={!isHost}
+            />
+
+            <SliderSetting
+              label="Максимальный ПЭ"
+              value={maxEnergyPercentage}
+              min={1}
+              max={300}
+              unit="%"
+              onChange={handleMaxEnergyChange}
+              disabled={!isHost}
+            />
+
+            <SliderSetting
+              label="Начальный ПЭ"
+              value={startingEnergyPercentage}
+              min={0}
+              max={100}
+              unit="%"
+              onChange={handleStartingEnergyChange}
+              disabled={!isHost}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

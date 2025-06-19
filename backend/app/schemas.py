@@ -42,6 +42,7 @@ class GameSettingsRequest(BaseModel):
     hp_percentage: int
     max_energy_percentage: int
     starting_energy_percentage: int
+    background: str = "none"
 
 # --- Schemas for Game State ---
 

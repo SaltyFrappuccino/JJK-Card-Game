@@ -88,6 +88,7 @@ class GameSettings(BaseModel):
     hp_percentage: int = 100  # 1% to 300%
     max_energy_percentage: int = 100  # 1% to 300%
     starting_energy_percentage: int = 100  # 0% to 100%
+    background: str = "none"  # background identifier
 
 class Lobby(BaseModel):
     id: str

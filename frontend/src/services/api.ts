@@ -26,11 +26,12 @@ export const api = {
     apiClient.post(`/lobby/${lobbyId}/start`, { player_id: playerId }),
   kickPlayer: (lobbyId: string, hostId: string, playerToKickId: string) =>
     apiClient.post<LobbyInfo>(`/lobby/${lobbyId}/kick`, { host_id: hostId, player_to_kick_id: playerToKickId }),
-  updateGameSettings: (lobbyId: string, playerId: string, hpPercentage: number, maxEnergyPercentage: number, startingEnergyPercentage: number) =>
+  updateGameSettings: (lobbyId: string, playerId: string, hpPercentage: number, maxEnergyPercentage: number, startingEnergyPercentage: number, background: string = "none") =>
     apiClient.post<LobbyInfo>(`/lobby/${lobbyId}/settings`, { 
       player_id: playerId, 
       hp_percentage: hpPercentage, 
       max_energy_percentage: maxEnergyPercentage, 
-      starting_energy_percentage: startingEnergyPercentage 
+      starting_energy_percentage: startingEnergyPercentage,
+      background: background
     }),
 }; 

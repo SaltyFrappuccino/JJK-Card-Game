@@ -124,7 +124,7 @@ class LobbyManager:
         
         return lobby
 
-    async def update_game_settings(self, lobby_id: str, player_id: str, hp_percentage: int, max_energy_percentage: int, starting_energy_percentage: int) -> Lobby:
+    async def update_game_settings(self, lobby_id: str, player_id: str, hp_percentage: int, max_energy_percentage: int, starting_energy_percentage: int, background: str = "none") -> Lobby:
         lobby = self.get_lobby(lobby_id)
         if not lobby:
             raise LobbyNotFound(f"Lobby with id {lobby_id} not found.")
@@ -143,6 +143,7 @@ class LobbyManager:
         lobby.game_settings.hp_percentage = hp_percentage
         lobby.game_settings.max_energy_percentage = max_energy_percentage
         lobby.game_settings.starting_energy_percentage = starting_energy_percentage
+        lobby.game_settings.background = background
         
         # Пересчитываем характеристики всех игроков с уже выбранными персонажами
         for p in lobby.players:

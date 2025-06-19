@@ -99,7 +99,7 @@ async def kick_player(lobby_id: str, request: KickPlayerRequest, lm: LobbyManage
 @router.post("/lobby/{lobby_id}/settings", response_model=LobbyInfo)
 async def update_game_settings(lobby_id: str, request: GameSettingsRequest, lm: LobbyManager = Depends(get_lobby_manager)):
     try:
-        lobby = await lm.update_game_settings(lobby_id, request.player_id, request.hp_percentage, request.max_energy_percentage, request.starting_energy_percentage)
+        lobby = await lm.update_game_settings(lobby_id, request.player_id, request.hp_percentage, request.max_energy_percentage, request.starting_energy_percentage, request.background)
         return lobby
     except (LobbyNotFound, PlayerNotFound) as e:
         raise HTTPException(status_code=404, detail=str(e))

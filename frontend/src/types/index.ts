@@ -56,6 +56,7 @@ export interface GameSettings {
   hp_percentage: number;
   max_energy_percentage: number;
   starting_energy_percentage: number;
+  background: string;
 }
 
 export interface LobbyInfo {
