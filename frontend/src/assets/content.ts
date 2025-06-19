@@ -228,13 +228,14 @@ export const ALL_CHARACTERS: Character[] = [
     max_energy: 65000,
     accent_color: CHARACTER_ACCENT_COLORS.jogo,
     portrait: jogoPortrait,
-    passive_ability_name: 'Прикосновение Лавы',
-    passive_ability_description: "Каждый раз, когда вы наносите урон картой Техники, цель получает эффект 'Горение' на 2 раунда (100 урона в начале её хода).",
+    passive_ability_name: 'Эскалация Жара',
+    passive_ability_description: "Каждый раз, когда вы наносите урон картой Техники, вы накладываете на цель или улучшаете огненный дебафф: если на цели нет огненного дебаффа, она получает \"Тление\" (Уровень 1) на 3 раунда. Если на цели уже есть огненный дебафф, он улучшается до следующего уровня.",
     unique_cards: [
-      { id: "jogo_ember_insects", name: 'Сикигами: Угольки', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 4000, description: 'Атакует до 3 целей, нанося каждой по 300 урона.', image: jogoEmberInsectsImg },
-      { id: "jogo_volcano_eruption", name: 'Извержение Вулкана', type: 'TECHNIQUE', rarity: 'RARE', cost: 9000, description: 'Наносит 600 урона всем противникам.', image: jogoVolcanoEruptionImg },
-      { id: "jogo_maximum_meteor", name: 'Максимум: Метеор', type: 'TECHNIQUE', rarity: 'EPIC', cost: 20000, description: 'Наносит 2000 урона основной цели и 500 урона игрокам слева и справа от нее.', image: jogoMaximumMeteorImg },
-      { id: "jogo_coffin_of_the_iron_mountain", name: 'Расширение Территории: Гроб Стальной Горы', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 35000, description: 'В течение 3 раундов в начале хода каждого противника он получает 800 урона от жара.', image: jogoDomainImg },
+      { id: "jogo_lava_touch", name: 'Прикосновение Лавы', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 5000, description: 'Наносит 400 урона игрокам слева и справа от вас. Накладывает на них "Горение" (Уровень 2) или улучшает существующий огненный дебафф до следующего уровня.', image: jogoVolcanoEruptionImg },
+      { id: "jogo_ember_insects", name: 'Сикигами: Угольки', type: 'TECHNIQUE', rarity: 'UNCOMMON', cost: 4000, description: 'Атакует до 3 целей. Наносит каждой цели 200 урона и накладывает на них "Тление" (Уровень 1) или улучшает существующий огненный дебафф до следующего уровня.', image: jogoEmberInsectsImg },
+      { id: "jogo_volcano_eruption", name: 'Извержение Вулкана', type: 'TECHNIQUE', rarity: 'RARE', cost: 9000, description: 'Наносит 600 урона всем противникам. (Эта карта активирует пассивку стандартным образом, накладывая "Тление" или улучшая существующий дебафф).', image: jogoVolcanoEruptionImg },
+      { id: "jogo_maximum_meteor", name: 'Максимум: Метеор', type: 'TECHNIQUE', rarity: 'EPIC', cost: 20000, description: 'Наносит 2000 урона основной цели и 500 урона игрокам слева и справа от нее. Накладывает на основную цель "Пекло" (Уровень 3) или улучшает существующий огненный дебафф до следующего уровня.', image: jogoMaximumMeteorImg },
+      { id: "jogo_coffin_of_the_iron_mountain", name: 'Расширение Территории: Гроб Стальной Горы', type: 'DOMAIN_EXPANSION', rarity: 'LEGENDARY', cost: 35000, description: 'В течение 3 раундов в начале хода каждого противника он получает 800 урона от жара. Дополнительно: пока активна эта территория, все ваши огненные дебаффы наносят на 50% больше урона.', image: jogoDomainImg },
     ]
   },
   {

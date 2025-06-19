@@ -54,6 +54,26 @@ export const effectsInfo = {
         description: "Горение: в начале вашего хода вы получаете 100 урона.",
         type: "NEGATIVE"
     },
+    "jogo_smoldering": {
+        title: "Тление (Уровень 1)",
+        description: "В начале вашего хода вы получаете 100 урона.",
+        type: "NEGATIVE"
+    },
+    "jogo_burning": {
+        title: "Горение (Уровень 2)", 
+        description: "В начале вашего хода вы получаете 250 урона.",
+        type: "NEGATIVE"
+    },
+    "jogo_inferno": {
+        title: "Пекло (Уровень 3)",
+        description: "В начале вашего хода вы получаете 500 урона и наносите 200 урона игрокам слева и справа от вас.",
+        type: "NEGATIVE"
+    },
+    "jogo_pyroclasm": {
+        title: "Пироклазм (Уровень 4)",
+        description: "В начале вашего хода вы получаете 750 урона и наносите 300 урона игрокам слева и справа от вас.",
+        type: "NEGATIVE"
+    },
     "jogo_coffin_of_the_iron_mountain": {
         title: "Жар Горы (РТ Дзёго)",
         description: "В начале вашего хода вы получаете 800 урона.",

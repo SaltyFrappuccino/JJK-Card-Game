@@ -11,6 +11,10 @@ EFFECT_ID_UNLIMITED_VOID = "gojo_unlimited_void" # свГодзё РТ деба�
 EFFECT_ID_DIVERGENT_FIST_DOT = "itadori_divergent_fist_dot"
 EFFECT_ID_BURN = "jogo_burn"
 EFFECT_ID_FREE_STRIKE = "free_strike_effect"
+EFFECT_ID_SMOLDERING = "jogo_smoldering"
+EFFECT_ID_BURNING = "jogo_burning"
+EFFECT_ID_INFERNO = "jogo_inferno"
+EFFECT_ID_PYROCLASM = "jogo_pyroclasm"
 
 effect_types = {
     "common_chant": EffectType.POSITIVE,
@@ -24,6 +28,10 @@ effect_types = {
     "itadori_unwavering_will": EffectType.NEGATIVE,
     "itadori_suppression_of_will": EffectType.NEGATIVE,
     "jogo_burn": EffectType.NEGATIVE,
+    "jogo_smoldering": EffectType.NEGATIVE,
+    "jogo_burning": EffectType.NEGATIVE,
+    "jogo_inferno": EffectType.NEGATIVE,
+    "jogo_pyroclasm": EffectType.NEGATIVE,
     "jogo_coffin_of_the_iron_mountain": EffectType.NEGATIVE,
     "yuta_rika_manifestation": EffectType.POSITIVE,
     "yuta_true_mutual_love": EffectType.POSITIVE,
@@ -483,7 +491,23 @@ class GameManager:
         effects_to_remove = []
         for effect in player.effects:
             if effect.name == EFFECT_ID_BURN: self._deal_damage(game, player, player, effect.value, is_effect_damage=True)
-            if effect.name == "jogo_coffin_of_the_iron_mountain": self._deal_damage(game, player, player, 800, is_effect_damage=True)
+            if effect.name == EFFECT_ID_SMOLDERING: self._deal_damage(game, player, player, 100, is_effect_damage=True)
+            if effect.name == EFFECT_ID_BURNING: self._deal_damage(game, player, player, 250, is_effect_damage=True)
+            if effect.name == EFFECT_ID_INFERNO: 
+                self._deal_damage(game, player, player, 500, is_effect_damage=True)
+                self._apply_inferno_splash_damage(game, player, 200)
+            if effect.name == EFFECT_ID_PYROCLASM: 
+                self._deal_damage(game, player, player, 750, is_effect_damage=True)
+                self._apply_inferno_splash_damage(game, player, 300)
+            if effect.name == "jogo_coffin_of_the_iron_mountain": 
+                base_damage = 800
+                # Check if Jogo has domain active and apply bonus
+                jogo_player = next((p for p in game.players if p.character and p.character.id == "jogo"), None)
+                if jogo_player and any(e.name == "jogo_coffin_of_the_iron_mountain" for e in jogo_player.effects):
+                    heat_effect = next((e for e in player.effects if e.name in [EFFECT_ID_SMOLDERING, EFFECT_ID_BURNING, EFFECT_ID_INFERNO, EFFECT_ID_PYROCLASM]), None)
+                    if heat_effect:
+                        base_damage = int(base_damage * 1.5)
+                self._deal_damage(game, player, player, base_damage, is_effect_damage=True)
             if effect.name == EFFECT_ID_DIVERGENT_FIST_DOT: 
                 source_player = self._find_player(game, effect.source_player_id)
                 if source_player:
@@ -542,14 +566,9 @@ class GameManager:
              target.energy = min(target.character.max_energy, target.energy + restore_amount)
              game.game_log.append(f"Жажда Развлечений дарует {target.nickname} {restore_amount} ПЭ!")
         
-        # Jogo Passive (Burn)
+        # Jogo Passive (Heat Escalation)
         if source_player and source_player.character and source_player.character.id == "jogo" and card_type == CardType.TECHNIQUE:
-            existing_burn = next((e for e in target.effects if e.name == EFFECT_ID_BURN), None)
-            if existing_burn:
-                existing_burn.duration = 2
-                game.game_log.append(f"Эффект 'Горение' на {target.nickname} обновлён.")
-            else:
-                self._apply_effect(game, source_player, target, EFFECT_ID_BURN, 2, value=100)
+            self._apply_jogo_heat_escalation(game, source_player, target)
 
         actual_damage = final_damage
         if source_player and source_player.chant_active_for_turn:
@@ -913,7 +932,8 @@ class GameManager:
         for t_id in targets_ids:
             target = self._find_player(game, t_id)
             if target:
-                self._deal_damage(game, player, target, 300, card=card, card_type=card.type)
+                self._deal_damage(game, player, target, 200, card=card, card_type=card.type)
+                self._apply_specific_heat_level(game, player, target, EFFECT_ID_SMOLDERING)
         
         return game
 
@@ -928,6 +948,8 @@ class GameManager:
         if not target: return game
         card = next(c for c in player.character.unique_cards if c.id == 'jogo_maximum_meteor')
         self._deal_damage(game, player, target, 2000, card=card, card_type=card.type)
+        self._apply_specific_heat_level(game, player, target, EFFECT_ID_INFERNO)
+        
         left = self._get_left_player(game, self._get_player_index(game, target.id))
         right = self._get_right_player(game, self._get_player_index(game, target.id))
         if left and left.id != player.id: 
@@ -939,6 +961,78 @@ class GameManager:
     def _effect_grob_stalnoi_gory(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         self._apply_domain_to_opponents(game, player, "jogo_coffin_of_the_iron_mountain", 3)
         return game
+
+    def _apply_jogo_heat_escalation(self, game: Game, source_player: Player, target: Player):
+        # Check if target has any heat effect
+        heat_effects = [EFFECT_ID_SMOLDERING, EFFECT_ID_BURNING, EFFECT_ID_INFERNO, EFFECT_ID_PYROCLASM]
+        existing_heat = next((e for e in target.effects if e.name in heat_effects), None)
+        
+        if existing_heat:
+            # Escalate existing effect
+            current_level = heat_effects.index(existing_heat.name)
+            if current_level < 3:  # Can escalate
+                new_effect_name = heat_effects[current_level + 1]
+                target.effects.remove(existing_heat)
+                # Keep the remaining duration
+                self._apply_effect(game, source_player, target, new_effect_name, existing_heat.duration - 1)
+                game.game_log.append(f"Огненный дебафф на {target.nickname} усилился!")
+        else:
+            # Apply Smoldering (Level 1)
+            self._apply_effect(game, source_player, target, EFFECT_ID_SMOLDERING, 3)
+
+    def _apply_inferno_splash_damage(self, game: Game, player: Player, damage: int):
+        player_index = self._get_player_index(game, player.id)
+        left_player = self._get_left_player(game, player_index)
+        right_player = self._get_right_player(game, player_index)
+        
+        if left_player and left_player.status == PlayerStatus.ALIVE:
+            self._deal_damage(game, None, left_player, damage, is_effect_damage=True)
+        if right_player and right_player.status == PlayerStatus.ALIVE and right_player.id != left_player.id:
+            self._deal_damage(game, None, right_player, damage, is_effect_damage=True)
+
+    def _effect_prikosnovenie_lavy(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
+        player_index = self._get_player_index(game, player.id)
+        left_player = self._get_left_player(game, player_index)
+        right_player = self._get_right_player(game, player_index)
+        
+        targets_hit = []
+        if left_player and left_player.status == PlayerStatus.ALIVE:
+            self._deal_damage(game, player, left_player, 400, card_type=CardType.TECHNIQUE)
+            self._apply_specific_heat_level(game, player, left_player, EFFECT_ID_BURNING)
+            targets_hit.append(left_player)
+        if right_player and right_player.status == PlayerStatus.ALIVE and right_player.id != left_player.id:
+            self._deal_damage(game, player, right_player, 400, card_type=CardType.TECHNIQUE)
+            self._apply_specific_heat_level(game, player, right_player, EFFECT_ID_BURNING)
+            targets_hit.append(right_player)
+        
+        return game
+
+    def _apply_specific_heat_level(self, game: Game, source_player: Player, target: Player, desired_level: str):
+        # Remove any existing heat effects
+        heat_effects = [EFFECT_ID_SMOLDERING, EFFECT_ID_BURNING, EFFECT_ID_INFERNO, EFFECT_ID_PYROCLASM]
+        existing_heat = next((e for e in target.effects if e.name in heat_effects), None)
+        
+        if existing_heat:
+            current_level_index = heat_effects.index(existing_heat.name)
+            desired_level_index = heat_effects.index(desired_level)
+            
+            if desired_level_index > current_level_index:
+                # Escalate to desired level
+                remaining_duration = existing_heat.duration
+                target.effects.remove(existing_heat)
+                self._apply_effect(game, source_player, target, desired_level, remaining_duration - 1)
+                game.game_log.append(f"Огненный дебафф на {target.nickname} усилился!")
+            elif desired_level_index <= current_level_index:
+                # Try to escalate by one level if possible
+                if current_level_index < 3:
+                    remaining_duration = existing_heat.duration
+                    target.effects.remove(existing_heat)
+                    new_effect = heat_effects[current_level_index + 1]
+                    self._apply_effect(game, source_player, target, new_effect, remaining_duration - 1)
+                    game.game_log.append(f"Огненный дебафф на {target.nickname} усилился!")
+        else:
+            # Apply desired level as new effect
+            self._apply_effect(game, source_player, target, desired_level, 3)
 
     def _effect_klinok_usilennyi_energiei(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
@@ -1011,6 +1105,7 @@ class GameManager:
             "itadori_slaughter_demon": self._effect_zakhod_s_razvorota,
             "itadori_deep_concentration": self._effect_glubokaia_kontsentratsiia,
             "itadori_unwavering_will": self._effect_nesgibaemaia_volia,
+            "jogo_lava_touch": self._effect_prikosnovenie_lavy,
             "jogo_ember_insects": self._effect_sikigami_ugolki,
             "jogo_volcano_eruption": self._effect_izverzhenie_vulkana,
             "jogo_maximum_meteor": self._effect_maksimum_meteor,
