@@ -985,9 +985,13 @@ class GameManager:
         left_player = self._get_left_player(game, player_index)
         right_player = self._get_right_player(game, player_index)
         
-        if left_player and left_player.status == PlayerStatus.ALIVE:
+        # Find the source player (Jogo) who applied the heat effect causing this splash damage
+        heat_effect = next((e for e in player.effects if e.name in [EFFECT_ID_INFERNO, EFFECT_ID_PYROCLASM]), None)
+        jogo_player_id = heat_effect.source_player_id if heat_effect else None
+        
+        if left_player and left_player.status == PlayerStatus.ALIVE and left_player.id != jogo_player_id:
             self._deal_damage(game, None, left_player, damage, is_effect_damage=True)
-        if right_player and right_player.status == PlayerStatus.ALIVE and right_player.id != left_player.id:
+        if right_player and right_player.status == PlayerStatus.ALIVE and right_player.id != left_player.id and right_player.id != jogo_player_id:
             self._deal_damage(game, None, right_player, damage, is_effect_damage=True)
 
     def _effect_prikosnovenie_lavy(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
