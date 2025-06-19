@@ -59,7 +59,7 @@ const getOpponentStyle = (index: number, totalOpponents: number): React.CSSPrope
 
 const GamePage: React.FC = () => {
   const { game, player: self, selectedBackground, reset: resetGame } = useGameStore();
-  const { emitPlayCard, emitEndTurn, emitDiscardCards, emitAddDummy, emitRemoveDummy } = useWS();
+  const { emitPlayCard, emitEndTurn, emitDiscardCards, emitAddDummy, emitRemoveDummy, emitForfeitGame } = useWS();
   const navigate = useNavigate();
 
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
@@ -180,6 +180,13 @@ const GamePage: React.FC = () => {
     navigate('/');
   };
 
+  const handleForfeitAndReturnToLobby = () => {
+    if (window.confirm('Вы уверены, что хотите покинуть игру? Ваш персонаж будет побежден.')) {
+      emitForfeitGame();
+      navigate('/');
+    }
+  };
+
   const handleToggleDiscardMode = () => {
     if (!isMyTurn) return;
     if (discardMode) {
@@ -237,6 +244,14 @@ const GamePage: React.FC = () => {
   return (
     <div className="game-page" style={backgroundStyle}>
       <div className="turn-indicator">Ход: {currentPlayer?.nickname}</div>
+      <div className="game-controls-top">
+        <button 
+          className="forfeit-button"
+          onClick={handleForfeitAndReturnToLobby}
+        >
+          Назад в Меню
+        </button>
+      </div>
       {targeting && multiTargetCount && (
         <div className="targeting-indicator">
             Выберите целей: {multiTargetSelection.length} / {multiTargetCount}

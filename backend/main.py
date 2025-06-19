@@ -92,6 +92,17 @@ async def websocket_endpoint(ws: WebSocket, lobby_id: str, player_id: str):
                 except GameException as e:
                     await ws.send_json({"type": "error", "payload": str(e)})
 
+            elif msg_type == "forfeit_game":
+                try:
+                    game = game_manager.forfeit_game(payload.get("game_id"), player_id)
+                    await broadcast(lobby_id, {"type": "game_state", "payload": game.dict()})
+                    # Send player back to lobby
+                    lobby = lobby_manager.get_lobby(lobby_id)
+                    if lobby:
+                        await ws.send_json({"type": "lobby_update", "payload": lobby.dict()})
+                except GameException as e:
+                    await ws.send_json({"type": "error", "payload": str(e)})
+
     except WebSocketDisconnect:
         await unregister(lobby_id, player_id)
 

@@ -1182,6 +1182,24 @@ class GameManager:
         game.game_log.append(f"Удален {dummy_to_remove.nickname}")
         return game
 
+    def forfeit_game(self, game_id: str, player_id: str) -> Game:
+        game = self.get_game(game_id)
+        if not game:
+            raise GameException("Игра не найдена.")
+        
+        player = self._find_player(game, player_id)
+        if not player:
+            raise GameException("Игрок не найден.")
+        
+        # Defeat the player immediately
+        self._defeat_player(game, player)
+        game.game_log.append(f"{player.nickname} покинул игру.")
+        
+        # Check if game should end
+        self._check_game_over(game)
+        
+        return game
+
     def _effect_snyat_povyazku(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         player.is_blindfolded = False
         blindfold_effect = next((e for e in player.effects if e.name == "gojo_blindfold"), None)

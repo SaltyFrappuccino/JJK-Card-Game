@@ -210,3 +210,27 @@ button:focus-visible {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #6a6a6a;
 }
+
+/* Game forfeit button */
+.game-controls-top {
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  z-index: 100;
+}
+
+.forfeit-button {
+  background-color: #c0392b;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.forfeit-button:hover {
+  background-color: #a93226;
+  border-color: #a93226;
+}

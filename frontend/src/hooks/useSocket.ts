@@ -15,7 +15,13 @@ export const useWS = () => {
 
     ws.onmessage = (e) => {
       const { type, payload } = JSON.parse(e.data);
-      if (type === 'lobby_update') setLobby(payload);
+      if (type === 'lobby_update') {
+        setLobby(payload);
+        // If we're receiving a lobby update while in game, it means we've been returned to main menu
+        if (window.location.pathname.includes('/game/')) {
+          navigate('/');
+        }
+      }
       if (type === 'game_state') {
         setGame(payload);
         if (payload.game_state === 'IN_GAME') {
@@ -82,5 +88,12 @@ export const useWS = () => {
     }
   };
 
-  return { send, emitPlayCard, emitEndTurn, emitDiscardCards, emitAddDummy, emitRemoveDummy };
+  const emitForfeitGame = () => {
+    const gameId = game?.game_id;
+    if (gameId) {
+      send('forfeit_game', { game_id: gameId });
+    }
+  };
+
+  return { send, emitPlayCard, emitEndTurn, emitDiscardCards, emitAddDummy, emitRemoveDummy, emitForfeitGame };
 }; 
