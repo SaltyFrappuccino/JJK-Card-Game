@@ -84,11 +84,17 @@ class Player(BaseModel):
     def dict(self, **kwargs):
         return self.model_dump(**kwargs)
 
+class GameSettings(BaseModel):
+    hp_percentage: int = 100  # 1% to 300%
+    max_energy_percentage: int = 100  # 1% to 300%
+    starting_energy_percentage: int = 100  # 0% to 100%
+
 class Lobby(BaseModel):
     id: str
     host_id: str
     players: List[Player] = []
     is_training: bool = False
+    game_settings: GameSettings = GameSettings()
     
 class GameState(str, Enum):
     LOBBY = "LOBBY"

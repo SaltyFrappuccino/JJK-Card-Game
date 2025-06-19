@@ -52,11 +52,18 @@ export interface Player {
   is_blindfolded?: boolean;
 }
 
+export interface GameSettings {
+  hp_percentage: number;
+  max_energy_percentage: number;
+  starting_energy_percentage: number;
+}
+
 export interface LobbyInfo {
   id: string;
   host_id: string;
   players: Player[];
   is_training: boolean;
+  game_settings: GameSettings;
 }
 
 export type GameStateEnum = 'LOBBY' | 'IN_GAME' | 'FINISHED';

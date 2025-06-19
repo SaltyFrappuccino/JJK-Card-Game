@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import { useWS } from '../hooks/useSocket';
@@ -22,9 +22,21 @@ const LobbyPage: React.FC = () => {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [isStarting, setIsStarting] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [hpPercentage, setHpPercentage] = useState(100);
+  const [maxEnergyPercentage, setMaxEnergyPercentage] = useState(100);
+  const [startingEnergyPercentage, setStartingEnergyPercentage] = useState(100);
   const navigate = useNavigate();
 
   const isHost = lobby?.host_id === player?.id;
+
+  // Синхронизируем локальное состояние с настройками лобби
+  useEffect(() => {
+    if (lobby?.game_settings) {
+      setHpPercentage(lobby.game_settings.hp_percentage);
+      setMaxEnergyPercentage(lobby.game_settings.max_energy_percentage);
+      setStartingEnergyPercentage(lobby.game_settings.starting_energy_percentage);
+    }
+  }, [lobby?.game_settings]);
 
   const handleKickPlayer = async (playerIdToKick: string) => {
     if (!lobby || !player?.id || !isHost) return;
@@ -68,6 +80,16 @@ const LobbyPage: React.FC = () => {
     }
   };
 
+  const updateGameSettings = async () => {
+    if (!lobby || !player?.id || !isHost) return;
+    try {
+      const { data } = await api.updateGameSettings(lobby.id, player.id, hpPercentage, maxEnergyPercentage, startingEnergyPercentage);
+      setLobby(data);
+    } catch (error: any) {
+      setError(error.response?.data?.detail || 'Не удалось обновить настройки игры.');
+    }
+  };
+
   if (!lobby || !player) {
     // This could happen on a page refresh. Redirect to home.
     navigate('/');
@@ -77,6 +99,65 @@ const LobbyPage: React.FC = () => {
   const allPlayersReady = lobby.players.every(p => p.character);
   const isTraining = lobby.is_training;
 
+  const SliderSetting: React.FC<{
+    label: string;
+    value: number;
+    min: number;
+    max: number;
+    unit: string;
+    onChange: (value: number) => void;
+  }> = ({ label, value, min, max, unit, onChange }) => {
+    const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = parseInt(e.target.value);
+      onChange(newValue);
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = parseInt(e.target.value);
+      if (!isNaN(newValue) && newValue >= min && newValue <= max) {
+        onChange(newValue);
+      }
+    };
+
+    const handleInputBlur = () => {
+      updateGameSettings();
+    };
+
+    const handleSliderMouseUp = () => {
+      updateGameSettings();
+    };
+
+    return (
+      <div className="slider-setting">
+        <label>{label}</label>
+        <div className="slider-container">
+          <div className="slider-wrapper">
+            <input
+              type="range"
+              min={min}
+              max={max}
+              value={value}
+              onChange={handleSliderChange}
+              onMouseUp={handleSliderMouseUp}
+              onTouchEnd={handleSliderMouseUp}
+              className="custom-slider"
+            />
+          </div>
+          <input
+            type="number"
+            value={value}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            min={min}
+            max={max}
+            className="slider-input"
+          />
+          <span className="slider-unit">{unit}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="lobby-page">
       <h2>{isTraining ? 'Тренировка' : `Лобби: ${lobby.id}`}</h2>
@@ -84,39 +165,7 @@ const LobbyPage: React.FC = () => {
           <button className="copy-code-btn" onClick={() => navigator.clipboard.writeText(lobby.id)}>Скопировать код</button>
       )}
       
-      {isHost && (
-        <div className="host-controls">
-          <button className="settings-btn" onClick={() => setShowSettings(!showSettings)}>
-            {showSettings ? 'Скрыть настройки' : 'Настройки'}
-          </button>
-          
-          {showSettings && (
-            <div className="game-settings">
-              <h3>Настройки игры</h3>
-              
-              <div className="setting-group">
-                <label>Фон игры:</label>
-                <div className="background-options">
-                  {BACKGROUND_OPTIONS.map(bg => (
-                    <div 
-                      key={bg.id}
-                      className={`background-option ${selectedBackground === bg.id ? 'selected' : ''}`}
-                      onClick={() => setSelectedBackground(bg.id)}
-                    >
-                      {bg.image ? (
-                        <img src={bg.image} alt={bg.name} className="background-preview" />
-                      ) : (
-                        <div className="no-background-preview">Без фона</div>
-                      )}
-                      <span className="background-name">{bg.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+
       
       <div className="lobby-container">
         {!isTraining && (
@@ -173,6 +222,67 @@ const LobbyPage: React.FC = () => {
         <button className="start-game-btn" onClick={handleStartGame} disabled={(!isTraining && !allPlayersReady) || isStarting}>
           {isStarting ? 'Запуск...' : 'Начать игру'}
         </button>
+      )}
+
+      {isHost && (
+        <div className="host-controls">
+          <button className="settings-btn" onClick={() => setShowSettings(!showSettings)}>
+            {showSettings ? 'Скрыть настройки' : 'Настройки'}
+          </button>
+          
+          {showSettings && (
+            <div className="game-settings">
+              <h3>Настройки игры</h3>
+              
+              <div className="setting-group">
+                <label>Фон игры:</label>
+                <div className="background-options">
+                  {BACKGROUND_OPTIONS.map(bg => (
+                    <div 
+                      key={bg.id}
+                      className={`background-option ${selectedBackground === bg.id ? 'selected' : ''}`}
+                      onClick={() => setSelectedBackground(bg.id)}
+                    >
+                      {bg.image ? (
+                        <img src={bg.image} alt={bg.name} className="background-preview" />
+                      ) : (
+                        <div className="no-background-preview">Без фона</div>
+                      )}
+                      <span className="background-name">{bg.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <SliderSetting
+                label="Процент ХП"
+                value={hpPercentage}
+                min={1}
+                max={300}
+                unit="%"
+                onChange={setHpPercentage}
+              />
+
+              <SliderSetting
+                label="Максимальный ПЭ"
+                value={maxEnergyPercentage}
+                min={1}
+                max={300}
+                unit="%"
+                onChange={setMaxEnergyPercentage}
+              />
+
+              <SliderSetting
+                label="Начальный ПЭ"
+                value={startingEnergyPercentage}
+                min={0}
+                max={100}
+                unit="%"
+                onChange={setStartingEnergyPercentage}
+              />
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

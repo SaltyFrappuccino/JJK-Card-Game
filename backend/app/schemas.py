@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
-from .models import Card, Character
+from .models import Card, Character, GameSettings
 
 # --- Schemas for Player and Lobby Management ---
 
@@ -20,6 +20,7 @@ class LobbyInfo(BaseModel):
     id: str
     host_id: str
     players: List[PlayerInfo]
+    game_settings: GameSettings = GameSettings()
 
     class Config:
         orm_mode = True
@@ -35,6 +36,12 @@ class CharacterSelectRequest(BaseModel):
 class KickPlayerRequest(BaseModel):
     host_id: str
     player_to_kick_id: str
+
+class GameSettingsRequest(BaseModel):
+    player_id: str
+    hp_percentage: int
+    max_energy_percentage: int
+    starting_energy_percentage: int
 
 # --- Schemas for Game State ---
 

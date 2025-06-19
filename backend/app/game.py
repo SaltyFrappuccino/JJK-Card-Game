@@ -369,9 +369,17 @@ class GameManager:
 
         if lobby.is_training:
             player = lobby.players[0]
-            player.max_hp = player.character.max_hp
-            player.hp = player.character.max_hp
-            player.energy = player.character.max_energy
+            # Применяем настройки игры для тренировки
+            modified_max_hp = int(player.character.max_hp * lobby.game_settings.hp_percentage / 100)
+            modified_max_energy = int(player.character.max_energy * lobby.game_settings.max_energy_percentage / 100)
+            starting_energy = int(modified_max_energy * lobby.game_settings.starting_energy_percentage / 100)
+            
+            player.max_hp = modified_max_hp
+            player.hp = modified_max_hp
+            player.energy = starting_energy
+            player.character.max_hp = modified_max_hp
+            player.character.max_energy = modified_max_energy
+            
             all_cards = [card.copy(deep=True) for card in player.character.unique_cards]
             all_cards.extend([card.copy(deep=True) for card in common_cards])
             player.hand = all_cards
@@ -383,8 +391,21 @@ class GameManager:
         else:
             random.shuffle(lobby.players)
             for p in lobby.players:
-                p.max_hp = p.character.max_hp
-                p.energy = int(p.character.max_energy * 0.20)
+                # Применяем настройки игры
+                modified_max_hp = int(p.character.max_hp * lobby.game_settings.hp_percentage / 100)
+                modified_max_energy = int(p.character.max_energy * lobby.game_settings.max_energy_percentage / 100)
+                starting_energy_percentage = lobby.game_settings.starting_energy_percentage / 100
+                
+                # Стандартный старт с 20% энергии, но с учетом настроек
+                base_energy_percentage = 0.20 * starting_energy_percentage
+                starting_energy = int(modified_max_energy * base_energy_percentage)
+                
+                p.max_hp = modified_max_hp
+                p.hp = modified_max_hp  # Игроки начинают с полным ХП
+                p.energy = starting_energy
+                p.character.max_hp = modified_max_hp
+                p.character.max_energy = modified_max_energy
+                
                 self._build_deck_for_player(p)
                 max_hand = 5
                 if p.character and p.character.id == "gojo_satoru":
@@ -485,7 +506,7 @@ class GameManager:
             player.effects.remove(effect)
             if effect.name == "itadori_unwavering_will": self._defeat_player(game, player)
 
-    def _deal_damage(self, game: Game, source_player: Player, target: Player, damage: int, ignores_block: bool = False, card: Card = None, card_type: CardType = None, is_effect_damage: bool = False):
+    def _deal_damage(self, game: Game, source_player: Player | None, target: Player, damage: int, ignores_block: bool = False, card: Card = None, card_type: CardType = None, is_effect_damage: bool = False):
         if target.status == PlayerStatus.DEFEATED:
             return
 
@@ -493,7 +514,7 @@ class GameManager:
         
         # Polymorphic Soul Isomer backlash
         isomer_effect = next((e for e in target.effects if e.name == "mahito_polymorphic_soul_isomer"), None)
-        if isomer_effect and not ignores_block and final_damage > target.block:
+        if isomer_effect and source_player and not ignores_block and final_damage > target.block:
             self._deal_damage(game, None, source_player, 500, ignores_block=True, is_effect_damage=True)
             game.game_log.append(f"{source_player.nickname} получает 500 ответного урона от 'Полиморфной Изомерной Души'!")
             target.effects.remove(isomer_effect)
@@ -545,10 +566,12 @@ class GameManager:
             actual_damage -= blocked_damage
         else:
             # Mahito condition counter
-            source_player.ignore_block_attacks_count += 1
+            if source_player:
+                source_player.ignore_block_attacks_count += 1
         
         target.hp -= actual_damage
-        game.game_log.append(f"{source_player.nickname} наносит {actual_damage} урона {target.nickname}.")
+        source_name = source_player.nickname if source_player else "Эффект"
+        game.game_log.append(f"{source_name} наносит {actual_damage} урона {target.nickname}.")
 
         if target.hp <= 0 and not any(e.name == "itadori_unwavering_will" for e in target.effects):
             self._defeat_player(game, target)

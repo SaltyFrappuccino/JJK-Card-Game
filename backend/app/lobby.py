@@ -61,9 +61,19 @@ class LobbyManager:
             raise CharacterNotFound(f"Character with id {character_id} not found.")
 
         player.character = character_template
-        player.hp = character_template.max_hp
-        player.max_hp = character_template.max_hp
-        player.energy = character_template.max_energy
+        
+        # Применяем настройки игры
+        modified_max_hp = int(character_template.max_hp * lobby.game_settings.hp_percentage / 100)
+        modified_max_energy = int(character_template.max_energy * lobby.game_settings.max_energy_percentage / 100)
+        starting_energy = int(modified_max_energy * lobby.game_settings.starting_energy_percentage / 100)
+        
+        player.hp = modified_max_hp
+        player.max_hp = modified_max_hp
+        player.energy = starting_energy
+        
+        # Обновляем характеристики персонажа с учетом настроек
+        player.character.max_hp = modified_max_hp
+        player.character.max_energy = modified_max_energy
         
         await broadcast(lobby_id, {"type": "lobby_update", "payload": lobby.dict()})
         return lobby
@@ -110,6 +120,30 @@ class LobbyManager:
         
         await broadcast(lobby_id, {"type": "lobby_update", "payload": lobby.dict()})
         await broadcast(lobby_id, {"type": "player_kicked", "payload": {"kicked_player_id": player_to_kick_id, "kicked_player_nickname": player_to_kick.nickname}})
+        
+        return lobby
+
+    async def update_game_settings(self, lobby_id: str, player_id: str, hp_percentage: int, max_energy_percentage: int, starting_energy_percentage: int) -> Lobby:
+        lobby = self.get_lobby(lobby_id)
+        if not lobby:
+            raise LobbyNotFound(f"Lobby with id {lobby_id} not found.")
+        
+        if lobby.host_id != player_id:
+            raise LobbyException("Только хост может изменять настройки игры.")
+
+        # Validate percentages
+        if not (1 <= hp_percentage <= 300):
+            raise LobbyException("HP percentage must be between 1% and 300%.")
+        if not (1 <= max_energy_percentage <= 300):
+            raise LobbyException("Max energy percentage must be between 1% and 300%.")
+        if not (0 <= starting_energy_percentage <= 100):
+            raise LobbyException("Starting energy percentage must be between 0% and 100%.")
+        
+        lobby.game_settings.hp_percentage = hp_percentage
+        lobby.game_settings.max_energy_percentage = max_energy_percentage
+        lobby.game_settings.starting_energy_percentage = starting_energy_percentage
+        
+        await broadcast(lobby_id, {"type": "lobby_update", "payload": lobby.dict()})
         
         return lobby
 

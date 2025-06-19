@@ -3,7 +3,7 @@ import uuid
 from typing import Annotated
 
 from .lobby import lobby_manager, LobbyManager
-from .schemas import PlayerCreate, LobbyInfo, LobbyJoinResponse, CharacterSelectRequest, GameStateInfo, PlayerInfo, KickPlayerRequest
+from .schemas import PlayerCreate, LobbyInfo, LobbyJoinResponse, CharacterSelectRequest, GameStateInfo, PlayerInfo, KickPlayerRequest, GameSettingsRequest
 from .exceptions import LobbyException, LobbyNotFound, CharacterAlreadyTaken, PlayerNotFound, CharacterNotFound
 
 router = APIRouter()
@@ -88,6 +88,18 @@ async def start_game(lobby_id: str, player_id_body: Annotated[dict, Body()], lm:
 async def kick_player(lobby_id: str, request: KickPlayerRequest, lm: LobbyManager = Depends(get_lobby_manager)):
     try:
         lobby = await lm.kick_player(lobby_id, request.host_id, request.player_to_kick_id)
+        return lobby
+    except (LobbyNotFound, PlayerNotFound) as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except LobbyException as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/lobby/{lobby_id}/settings", response_model=LobbyInfo)
+async def update_game_settings(lobby_id: str, request: GameSettingsRequest, lm: LobbyManager = Depends(get_lobby_manager)):
+    try:
+        lobby = await lm.update_game_settings(lobby_id, request.player_id, request.hp_percentage, request.max_energy_percentage, request.starting_energy_percentage)
         return lobby
     except (LobbyNotFound, PlayerNotFound) as e:
         raise HTTPException(status_code=404, detail=str(e))

@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { LobbyInfo } from '../types';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: 'http://185.188.182.11:8002/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -26,4 +26,11 @@ export const api = {
     apiClient.post(`/lobby/${lobbyId}/start`, { player_id: playerId }),
   kickPlayer: (lobbyId: string, hostId: string, playerToKickId: string) =>
     apiClient.post<LobbyInfo>(`/lobby/${lobbyId}/kick`, { host_id: hostId, player_to_kick_id: playerToKickId }),
+  updateGameSettings: (lobbyId: string, playerId: string, hpPercentage: number, maxEnergyPercentage: number, startingEnergyPercentage: number) =>
+    apiClient.post<LobbyInfo>(`/lobby/${lobbyId}/settings`, { 
+      player_id: playerId, 
+      hp_percentage: hpPercentage, 
+      max_energy_percentage: maxEnergyPercentage, 
+      starting_energy_percentage: startingEnergyPercentage 
+    }),
 }; 
