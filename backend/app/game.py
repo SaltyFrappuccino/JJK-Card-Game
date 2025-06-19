@@ -369,16 +369,12 @@ class GameManager:
 
         if lobby.is_training:
             player = lobby.players[0]
-            # Применяем настройки игры для тренировки
-            modified_max_hp = int(player.character.max_hp * lobby.game_settings.hp_percentage / 100)
-            modified_max_energy = int(player.character.max_energy * lobby.game_settings.max_energy_percentage / 100)
-            starting_energy = int(modified_max_energy * lobby.game_settings.starting_energy_percentage / 100)
+            # Настройки уже применены в lobby.py при выборе персонажа
+            # Здесь только устанавливаем стартовую энергию согласно настройкам
+            starting_energy_percentage = lobby.game_settings.starting_energy_percentage / 100
+            starting_energy = int(player.character.max_energy * starting_energy_percentage)
             
-            player.max_hp = modified_max_hp
-            player.hp = modified_max_hp
             player.energy = starting_energy
-            player.character.max_hp = modified_max_hp
-            player.character.max_energy = modified_max_energy
             
             all_cards = [card.copy(deep=True) for card in player.character.unique_cards]
             all_cards.extend([card.copy(deep=True) for card in common_cards])
@@ -391,20 +387,16 @@ class GameManager:
         else:
             random.shuffle(lobby.players)
             for p in lobby.players:
-                # Применяем настройки игры
-                modified_max_hp = int(p.character.max_hp * lobby.game_settings.hp_percentage / 100)
-                modified_max_energy = int(p.character.max_energy * lobby.game_settings.max_energy_percentage / 100)
+                # Настройки уже применены в lobby.py при выборе персонажа
+                # Здесь только устанавливаем стартовую энергию согласно настройкам
                 starting_energy_percentage = lobby.game_settings.starting_energy_percentage / 100
                 
-                # Стандартный старт с 20% энергии, но с учетом настроек
-                base_energy_percentage = 0.20 * starting_energy_percentage
-                starting_energy = int(modified_max_energy * base_energy_percentage)
+                # Если стартовая энергия 100%, то игрок начинает с полной энергией
+                # Если 0%, то с нулевой энергией
+                # Если 20% (стандарт), то с 20% от максимальной энергии
+                starting_energy = int(p.character.max_energy * starting_energy_percentage)
                 
-                p.max_hp = modified_max_hp
-                p.hp = modified_max_hp  # Игроки начинают с полным ХП
                 p.energy = starting_energy
-                p.character.max_hp = modified_max_hp
-                p.character.max_energy = modified_max_energy
                 
                 self._build_deck_for_player(p)
                 max_hand = 5

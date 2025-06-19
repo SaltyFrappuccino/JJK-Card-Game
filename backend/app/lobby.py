@@ -60,7 +60,8 @@ class LobbyManager:
         if not character_template:
             raise CharacterNotFound(f"Character with id {character_id} not found.")
 
-        player.character = character_template
+        # Создаем копию персонажа, чтобы не изменять глобальный объект
+        player.character = character_template.copy(deep=True)
         
         # Применяем настройки игры
         modified_max_hp = int(character_template.max_hp * lobby.game_settings.hp_percentage / 100)
@@ -142,6 +143,23 @@ class LobbyManager:
         lobby.game_settings.hp_percentage = hp_percentage
         lobby.game_settings.max_energy_percentage = max_energy_percentage
         lobby.game_settings.starting_energy_percentage = starting_energy_percentage
+        
+        # Пересчитываем характеристики всех игроков с уже выбранными персонажами
+        for p in lobby.players:
+            if p.character:
+                # Находим оригинальный шаблон персонажа
+                original_character = next((c for c in characters if c.id == p.character.id), None)
+                if original_character:
+                    # Пересчитываем характеристики с новыми настройками
+                    modified_max_hp = int(original_character.max_hp * hp_percentage / 100)
+                    modified_max_energy = int(original_character.max_energy * max_energy_percentage / 100)
+                    starting_energy = int(modified_max_energy * starting_energy_percentage / 100)
+                    
+                    p.hp = modified_max_hp
+                    p.max_hp = modified_max_hp
+                    p.energy = starting_energy
+                    p.character.max_hp = modified_max_hp
+                    p.character.max_energy = modified_max_energy
         
         await broadcast(lobby_id, {"type": "lobby_update", "payload": lobby.dict()})
         
