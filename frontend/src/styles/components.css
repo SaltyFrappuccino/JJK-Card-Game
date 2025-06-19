@@ -164,6 +164,16 @@
     filter: drop-shadow(0px -5px 8px rgba(0, 0, 0, 0.9));
     object-fit: contain;
     object-position: bottom;
+    transition: transform 0.1s ease-out, z-index 0s ease-out;
+    transform-style: preserve-3d;
+}
+
+.player-pod:hover .player-portrait {
+    z-index: 5;
+}
+
+.player-pod.self-player.current-player:hover .player-portrait {
+    z-index: -1;
 }
 
 .player-pod.self-player .player-portrait {
@@ -208,7 +218,7 @@
     margin-bottom: 10px;
     align-items: center;
     position: relative;
-    z-index: 2;
+    z-index: 3;
 }
 
 .status-bars {
@@ -217,8 +227,7 @@
     gap: 5px;
     margin-bottom: 5px;
     position: relative;
-    z-index: 2;
-    z-index: 1;
+    z-index: 3;
 }
 
 .hp-bar, .energy-bar {
@@ -255,7 +264,7 @@
     margin-bottom: 5px;
     text-align: center;
     position: relative;
-    z-index: 1;
+    z-index: 3;
 }
 
 .effects {
@@ -264,7 +273,7 @@
     flex-wrap: wrap;
     margin-top: 5px;
     position: relative;
-    z-index: 1;
+    z-index: 3;
 }
 
 .effect-icon {
@@ -305,7 +314,7 @@
     width: 100%;
     margin-top: 8px;
     position: relative;
-    z-index: 1;
+    z-index: 10;
 }
 
 .passive-info {
@@ -338,12 +347,12 @@ button:hover {
     text-align: center;
     font-size: 0.8rem;
     position: relative;
-    z-index: 1;
+    z-index: 3;
 }
 
 .remove-dummy-btn {
     position: relative;
-    z-index: 1;
+    z-index: 10;
 }
 
 /* Character Accent Color Glowing Effects */

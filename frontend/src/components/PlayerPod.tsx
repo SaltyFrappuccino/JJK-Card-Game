@@ -22,6 +22,7 @@ interface PlayerPodProps {
 const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, onSelect, isSelf = false, onEndTurn, viewerIsGojo = false, isTraining = false, onRemoveDummy, style }) => {
   const podRef = useRef<HTMLDivElement>(null);
   const [transform, setTransform] = useState('');
+  const [portraitTransform, setPortraitTransform] = useState('');
   
   const fullCharacterData = player.character ? ALL_CHARACTERS.find(c => c.id === player.character!.id) : null;
 
@@ -56,6 +57,9 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!podRef.current) return;
     
+    // Отключаем параллакс для текущего игрока с кнопкой "Конец хода"
+    if (isSelf && isCurrent && onEndTurn) return;
+    
     const rect = podRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -66,11 +70,18 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
     const rotateX = (y - centerY) / 15;
     const rotateY = (centerX - x) / 15;
     
+    const portraitRotateX = (y - centerY) / 8;
+    const portraitRotateY = (centerX - x) / 8;
+    const portraitTranslateX = (x - centerX) / 20;
+    const portraitTranslateY = (y - centerY) / 20;
+    
     setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`);
+    setPortraitTransform(`translateX(${portraitTranslateX}px) translateY(${portraitTranslateY}px) rotateX(${portraitRotateX}deg) rotateY(${portraitRotateY}deg) translateZ(15px)`);
   };
 
   const handleMouseLeave = () => {
     setTransform('');
+    setPortraitTransform('');
   };
 
   return (
@@ -93,6 +104,7 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
           src={portraitSrc} 
           alt={fullCharacterData.name} 
           className="player-portrait"
+          style={{ transform: portraitTransform }}
           data-tooltip-id={`passive-tooltip-${player.id}`}
           data-tooltip-html={`<strong>${fullCharacterData.passive_ability_name}</strong><br />${fullCharacterData.passive_ability_description}`}
         />
