@@ -785,7 +785,7 @@ class GameManager:
     def _effect_razrez(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        card = next(c for c in player.character.unique_cards if c.id == 'sukuna_cleave')
+        card = next(c for c in player.character.unique_cards if c.id == 'sukuna_dismantle')
         self._deal_damage(game, player, target, 600, card=card, card_type=card.type)
         left_player = self._get_left_player(game, self._get_player_index(game, target.id))
         if left_player and left_player.id != player.id: 
@@ -795,7 +795,7 @@ class GameManager:
     def _effect_rasshcheplenie(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        card = next(c for c in player.character.unique_cards if c.id == 'sukuna_dismantle')
+        card = next(c for c in player.character.unique_cards if c.id == 'sukuna_cleave')
         self._deal_damage(game, player, target, 1600, card=card, card_type=card.type)
         return game
 
@@ -1116,8 +1116,9 @@ class GameManager:
         if not alive_opponents:
             return game
         
-        cleave_count = random.randint(1, 3)
-        dismantle_count = random.randint(1, 3)
+        total_players = len(game.players)
+        cleave_count = max(1, total_players // 2)  # n/2, минимум 1, округляется в меньшую сторону
+        dismantle_count = random.randint(1, total_players)  # от 1 до n
         
         game.game_log.append(f"Сила Сукуны высвобождается! {cleave_count} Расщеплений и {dismantle_count} Рассечений!")
         
