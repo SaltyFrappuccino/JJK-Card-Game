@@ -142,6 +142,15 @@ export const ALL_CHARACTERS: Character[] = [
         image: gojoRedImg
       },
       {
+        id: "gojo_blue_maximum",
+        name: 'Максимальный Выброс: Синий',
+        type: 'TECHNIQUE',
+        rarity: 'EPIC',
+        cost: 28000,
+        description: 'Наносит 500 урона ВСЕМ противникам на поле. После этого позиции всех живых игроков случайно меняются местами.',
+        image: gojoBlueImg
+      },
+      {
         id: "gojo_purple",
         name: 'Мнимая техника: "Фиолетовый"',
         type: 'TECHNIQUE',

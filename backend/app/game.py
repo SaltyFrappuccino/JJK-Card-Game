@@ -865,6 +865,58 @@ class GameManager:
         self._apply_effect(game, player, player, "gojo_red_effect", 999)
         return game
 
+    def _effect_sinii_maksimum(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
+        import random
+        
+        # Наносим 500 урона ВСЕМ игрокам на поле КРОМЕ самого кастера
+        all_alive_players = [p for p in game.players if p.status == PlayerStatus.ALIVE and p.id != player.id]
+        
+        for target in all_alive_players:
+            self._deal_damage(game, player, target, 500, card_type=CardType.TECHNIQUE)
+        
+        game.game_log.append(f"{player.nickname} использует 'Максимальный Выброс: Синий'! Все противники получают 500 урона!")
+        
+        # Перестановка позиций всех живых игроков
+        alive_after_damage = [p for p in game.players if p.status == PlayerStatus.ALIVE]
+        
+        if len(alive_after_damage) > 1:
+            # Сохраняем ID текущего игрока перед перестановкой
+            current_player_id = game.players[game.current_turn_player_index].id
+            
+            # Получаем текущие позиции
+            current_positions = {p.id: game.players.index(p) for p in alive_after_damage}
+            
+            # Создаем список позиций
+            positions = list(current_positions.values())
+            
+            # Случайно перемешиваем позиции
+            random.shuffle(positions)
+            
+            # Создаем новый список игроков
+            new_players = [None] * len(game.players)
+            
+            # Помещаем неживых игроков на их места
+            for i, p in enumerate(game.players):
+                if p.status != PlayerStatus.ALIVE:
+                    new_players[i] = p
+            
+            # Переставляем живых игроков
+            for i, alive_player in enumerate(alive_after_damage):
+                new_position = positions[i]
+                new_players[new_position] = alive_player
+            
+            game.players = new_players
+            
+            # Находим новую позицию текущего игрока и обновляем индекс
+            for i, p in enumerate(game.players):
+                if p and p.id == current_player_id:
+                    game.current_turn_player_index = i
+                    break
+            
+            game.game_log.append("Позиции всех живых игроков случайно перемешались!")
+        
+        return game
+
     def _effect_fioletovyi(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
@@ -1219,6 +1271,7 @@ class GameManager:
             "gojo_strengthened_strike": self._effect_usilennyi_udar, 
             "gojo_infinity": self._effect_neitral,
             "gojo_blue": self._effect_sinii, 
+            "gojo_blue_maximum": self._effect_sinii_maksimum,
             "gojo_red": self._effect_krasnyi,
             "gojo_purple": self._effect_fioletovyi,
             "gojo_unlimited_void": self._effect_neobiatnaia_bezdna,

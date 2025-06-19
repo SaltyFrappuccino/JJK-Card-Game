@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import { useWS } from '../hooks/useSocket';

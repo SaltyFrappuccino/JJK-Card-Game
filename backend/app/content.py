@@ -121,6 +121,14 @@ characters = [
                 description="Наносит 1200 урона основной цели и 600 урона игроку справа от неё. Активирует условие для \"Фиолетового\"."
             ),
             Card(
+                id="gojo_blue_maximum",
+                name="Максимальный Выброс: Синий",
+                type=CardType.TECHNIQUE,
+                rarity=Rarity.EPIC,
+                cost=28000,
+                description="Наносит 500 урона ВСЕМ противникам на поле. После этого позиции всех живых игроков случайно меняются местами."
+            ),
+            Card(
                 id="gojo_purple",
                 name="Мнимая техника: \"Фиолетовый\"",
                 type=CardType.TECHNIQUE,
