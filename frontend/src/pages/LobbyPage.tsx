@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../store/gameStore';
 import { useWS } from '../hooks/useSocket';
@@ -16,6 +16,54 @@ const BACKGROUND_OPTIONS = [
   { id: 'shinjuku2', name: 'Синдзюку 2', image: shinjukuBg2 }
 ];
 
+const SliderSetting: React.FC<{
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  unit: string;
+  onChange: (value: number) => void;
+}> = React.memo(({ label, value, min, max, unit, onChange }) => {
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseInt(e.target.value);
+    onChange(newValue);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseInt(e.target.value);
+    if (!isNaN(newValue) && newValue >= min && newValue <= max) {
+      onChange(newValue);
+    }
+  };
+
+  return (
+    <div className="slider-setting">
+      <label>{label}</label>
+      <div className="slider-container">
+        <div className="slider-wrapper">
+          <input
+            type="range"
+            min={min}
+            max={max}
+            value={value}
+            onChange={handleSliderChange}
+            className="custom-slider"
+          />
+        </div>
+        <input
+          type="number"
+          value={value}
+          onChange={handleInputChange}
+          min={min}
+          max={max}
+          className="slider-input"
+        />
+        <span className="slider-unit">{unit}</span>
+      </div>
+    </div>
+  );
+});
+
 const LobbyPage: React.FC = () => {
   useWS(); // Initialize WebSocket listeners
   const { lobby, player, selectedBackground, setLobby, setError, setSelectedBackground } = useGameStore();
@@ -28,6 +76,19 @@ const LobbyPage: React.FC = () => {
   const navigate = useNavigate();
 
   const isHost = lobby?.host_id === player?.id;
+
+  // Создаем стабильные callback функции
+  const handleHpChange = useCallback((value: number) => {
+    setHpPercentage(value);
+  }, []);
+
+  const handleMaxEnergyChange = useCallback((value: number) => {
+    setMaxEnergyPercentage(value);
+  }, []);
+
+  const handleStartingEnergyChange = useCallback((value: number) => {
+    setStartingEnergyPercentage(value);
+  }, []);
 
   const handleKickPlayer = async (playerIdToKick: string) => {
     if (!lobby || !player?.id || !isHost) return;
@@ -87,54 +148,6 @@ const LobbyPage: React.FC = () => {
   
   const allPlayersReady = lobby.players.every(p => p.character);
   const isTraining = lobby.is_training;
-
-  const SliderSetting: React.FC<{
-    label: string;
-    value: number;
-    min: number;
-    max: number;
-    unit: string;
-    onChange: (value: number) => void;
-  }> = ({ label, value, min, max, unit, onChange }) => {
-    const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = parseInt(e.target.value);
-      onChange(newValue);
-    };
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = parseInt(e.target.value);
-      if (!isNaN(newValue) && newValue >= min && newValue <= max) {
-        onChange(newValue);
-      }
-    };
-
-    return (
-      <div className="slider-setting">
-        <label>{label}</label>
-        <div className="slider-container">
-          <div className="slider-wrapper">
-            <input
-              type="range"
-              min={min}
-              max={max}
-              value={value}
-              onChange={handleSliderChange}
-              className="custom-slider"
-            />
-          </div>
-          <input
-            type="number"
-            value={value}
-            onChange={handleInputChange}
-            min={min}
-            max={max}
-            className="slider-input"
-          />
-          <span className="slider-unit">{unit}</span>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="lobby-page">
@@ -238,7 +251,7 @@ const LobbyPage: React.FC = () => {
                 min={1}
                 max={300}
                 unit="%"
-                onChange={setHpPercentage}
+                onChange={handleHpChange}
               />
 
               <SliderSetting
@@ -247,7 +260,7 @@ const LobbyPage: React.FC = () => {
                 min={1}
                 max={300}
                 unit="%"
-                onChange={setMaxEnergyPercentage}
+                onChange={handleMaxEnergyChange}
               />
 
               <SliderSetting
@@ -256,7 +269,7 @@ const LobbyPage: React.FC = () => {
                 min={0}
                 max={100}
                 unit="%"
-                onChange={setStartingEnergyPercentage}
+                onChange={handleStartingEnergyChange}
               />
             </div>
           )}
