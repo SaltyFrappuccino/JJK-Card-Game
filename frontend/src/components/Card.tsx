@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import type { Card as CardType } from '../types';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
@@ -54,6 +54,9 @@ const prepareDescription = (description: string) => {
 const rarityClass = (rarity: string) => `rarity-${rarity.toLowerCase()}`;
 
 export const Card: React.FC<CardProps> = ({ card, isPlayable, onClick, index = 0, total = 1, isSelected = false, className }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [transform, setTransform] = useState('');
+  
   const angle = (index - (total - 1) / 2) * 10;
   const yOffset = isSelected ? -80 : 0;
   const scaleVal = isSelected ? 1.25 : 1;
@@ -64,14 +67,42 @@ export const Card: React.FC<CardProps> = ({ card, isPlayable, onClick, index = 0
 
   const cardInfo = ALL_CARDS.find(c => c.id === card.id);
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!cardRef.current) return;
+    
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const rotateX = (y - centerY) / 10;
+    const rotateY = (centerX - x) / 10;
+    
+    setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(20px)`);
+  };
+
+  const handleMouseLeave = () => {
+    setTransform('');
+  };
+
   return (
     <motion.div
+      ref={cardRef}
       className={clsx('card', rarityClass(card.rarity), { 'is-playable': isPlayable, 'is-selected': isSelected }, className)}
-      style={{ marginLeft: index === 0 ? 0 : -170, zIndex: z, transformOrigin: 'bottom center' }}
+      style={{ 
+        marginLeft: index === 0 ? 0 : -170, 
+        zIndex: z, 
+        transformOrigin: 'bottom center',
+        transform: transform
+      }}
       initial={{ rotate: angle, y: yOffset, scale: scaleVal }}
       animate={{ rotate: angle, y: yOffset, scale: scaleVal, zIndex: z }}
       whileHover={{ scale: isSelected ? 1.3 : 1.2, y: isSelected ? -90 : -30, rotate: 0, zIndex: 200 }}
       onClick={onClick}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
       {cardInfo?.image && (
         <div className="card-image-container">

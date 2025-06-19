@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import type { Player } from '../types';
 import clsx from 'clsx';
 import { effectsInfo } from '../assets/effectsInfo';
@@ -20,6 +20,9 @@ interface PlayerPodProps {
 }
 
 const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, onSelect, isSelf = false, onEndTurn, viewerIsGojo = false, isTraining = false, onRemoveDummy, style }) => {
+  const podRef = useRef<HTMLDivElement>(null);
+  const [transform, setTransform] = useState('');
+  
   const fullCharacterData = player.character ? ALL_CHARACTERS.find(c => c.id === player.character!.id) : null;
 
   const maxHp = player.character?.max_hp || player.max_hp || 1;
@@ -50,9 +53,30 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
 
   const characterGlowClass = getCharacterGlowClass(player.character?.id);
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!podRef.current) return;
+    
+    const rect = podRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const rotateX = (y - centerY) / 15;
+    const rotateY = (centerX - x) / 15;
+    
+    setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`);
+  };
+
+  const handleMouseLeave = () => {
+    setTransform('');
+  };
+
   return (
     <div
-      style={style}
+      ref={podRef}
+      style={{ ...style, transform: transform }}
       className={clsx('player-pod', {
         'current-player': isCurrent,
         'targetable': isTargetable,
@@ -61,6 +85,8 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
       }, characterGlowClass)}
       onClick={(event) => onSelect && isTargetable && player.status !== 'DEFEATED' && onSelect(player.id, event)}
       onContextMenu={(event) => onSelect && isTargetable && player.status !== 'DEFEATED' && onSelect(player.id, event)}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
       {fullCharacterData && portraitSrc && (
         <img 
