@@ -798,18 +798,48 @@ class GameManager:
     def _effect_sinii(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         if any(e.name == "gojo_blue_effect" for e in player.effects):
             game.game_log.append("Эффект 'Синий' уже активен.")
-            # Still deal damage, just don't apply the effect again
-            opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
-            targets = random.sample(opponents, min(len(opponents), 2))
-            for target in targets:
-                self._deal_damage(game, player, target, 1000, card_type=CardType.TECHNIQUE)
+        
+        # Новая механика двойного выбора
+        if not targets_ids or len(targets_ids) < 2:
+            game.game_log.append("Для 'Синего' требуется выбрать две цели.")
             return game
-
-        opponents = [p for p in game.players if p.id != player.id and p.status == PlayerStatus.ALIVE]
-        targets = random.sample(opponents, min(len(opponents), 2))
-        for target in targets:
-            self._deal_damage(game, player, target, 1000, card_type=CardType.TECHNIQUE)
-        self._apply_effect(game, player, player, "gojo_blue_effect", 999)
+        
+        target1_id = targets_ids[0]
+        target2_id = targets_ids[1]
+        
+        target1 = self._find_player(game, target1_id)
+        target2 = self._find_player(game, target2_id)
+        
+        if not target1 or not target2:
+            game.game_log.append("Не удалось найти выбранные цели.")
+            return game
+        
+        # Проверяем, что цели не побеждены
+        if target1.status != PlayerStatus.ALIVE or target2.status != PlayerStatus.ALIVE:
+            game.game_log.append("Нельзя выбрать побежденных игроков в качестве целей.")
+            return game
+        
+        if target1_id == target2_id:
+            # Дважды выбран один противник - наносим 1000 урона
+            self._deal_damage(game, player, target1, 1000, card_type=CardType.TECHNIQUE)
+            game.game_log.append(f"{player.nickname} фокусирует 'Синий' на {target1.nickname}, нанося 1000 урона!")
+        else:
+            # Выбраны два разных противника - по 500 урона каждому + перестановка
+            self._deal_damage(game, player, target1, 500, card_type=CardType.TECHNIQUE)
+            self._deal_damage(game, player, target2, 500, card_type=CardType.TECHNIQUE)
+            
+            # Меняем противников местами
+            index1 = self._get_player_index(game, target1_id)
+            index2 = self._get_player_index(game, target2_id)
+            
+            if index1 != -1 and index2 != -1:
+                game.players[index1], game.players[index2] = game.players[index2], game.players[index1]
+                game.game_log.append(f"{player.nickname} использует 'Синий' для перестановки {target1.nickname} и {target2.nickname}!")
+        
+        # Активируем условие для "Фиолетового"
+        if not any(e.name == "gojo_blue_effect" for e in player.effects):
+            self._apply_effect(game, player, player, "gojo_blue_effect", 999)
+        
         return game
 
     def _effect_krasnyi(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:

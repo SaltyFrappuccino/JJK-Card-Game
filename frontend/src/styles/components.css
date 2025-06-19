@@ -391,6 +391,35 @@ button:hover {
     z-index: 2;
 }
 
+.target-count-indicator {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0, 255, 255, 0.9);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    z-index: 10;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% { 
+        background: rgba(0, 255, 255, 0.9);
+        transform: scale(1);
+    }
+    50% { 
+        background: rgba(0, 255, 255, 1);
+        transform: scale(1.1);
+    }
+    100% { 
+        background: rgba(0, 255, 255, 0.9);
+        transform: scale(1);
+    }
+}
+
 .remove-dummy-btn {
     position: relative;
     z-index: 5;

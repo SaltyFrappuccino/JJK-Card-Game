@@ -17,9 +17,10 @@ interface PlayerPodProps {
   isTraining?: boolean;
   onRemoveDummy?: (dummyId: string) => void;
   style?: React.CSSProperties;
+  targetCount?: number;
 }
 
-const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, onSelect, isSelf = false, onEndTurn, viewerIsGojo = false, isTraining = false, onRemoveDummy, style }) => {
+const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, onSelect, isSelf = false, onEndTurn, viewerIsGojo = false, isTraining = false, onRemoveDummy, style, targetCount = 0 }) => {
   const podRef = useRef<HTMLDivElement>(null);
   const portraitRef = useRef<HTMLImageElement>(null);
   const [transform, setTransform] = useState('');
@@ -143,6 +144,11 @@ const PlayerPod: React.FC<PlayerPodProps> = ({ player, isCurrent, isTargetable, 
       {player.character?.id === 'mahito' && (
         <div className="souls-indicator">
           Искажённые души: {player.distorted_souls ?? 0}
+        </div>
+      )}
+      {targetCount > 0 && (
+        <div className="target-count-indicator">
+          Выбрано: {targetCount}
         </div>
       )}
       <div className="effects">

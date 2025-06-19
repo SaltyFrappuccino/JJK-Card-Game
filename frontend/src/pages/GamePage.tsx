@@ -27,6 +27,9 @@ const getMultiTargetCount = (card: CardType): number | null => {
   if (card.id === 'jogo_ember_insects') {
     return 3;
   }
+  if (card.id === 'gojo_blue') {
+    return 2;
+  }
   return null;
 };
 
@@ -254,9 +257,21 @@ const GamePage: React.FC = () => {
       </div>
       {targeting && multiTargetCount && (
         <div className="targeting-indicator">
-            Выберите целей: {multiTargetSelection.length} / {multiTargetCount}
-            <br />
-            (ПКМ для отмены выбора)
+            {selectedCard?.id === 'gojo_blue' ? (
+              <>
+                Выберите 2 цели для "Синего": {multiTargetSelection.length} / {multiTargetCount}
+                <br />
+                (Выберите двух разных противников для перестановки или одного дважды для фокусировки)
+                <br />
+                (ПКМ для отмены выбора)
+              </>
+            ) : (
+              <>
+                Выберите целей: {multiTargetSelection.length} / {multiTargetCount}
+                <br />
+                (ПКМ для отмены выбора)
+              </>
+            )}
             {multiTargetSelection.length > 0 && (
               <button onClick={confirmMultiTarget} style={{marginLeft: '10px'}}>Подтвердить</button>
             )}
@@ -264,19 +279,23 @@ const GamePage: React.FC = () => {
       )}
       <div className="game-board">
         <div className="player-pods-container">
-          {orderedOpponents.map((p, index) => (
-            <PlayerPod 
-              key={p.id} 
-              style={getOpponentStyle(index, orderedOpponents.length)}
-              player={p} 
-              isCurrent={p.id === currentPlayer?.id}
-              isTargetable={targeting}
-              onSelect={(targetId, event) => handlePlayerSelect(targetId, event)}
-              viewerIsGojo={viewerIsGojo}
-              isTraining={game.is_training}
-              onRemoveDummy={emitRemoveDummy}
-            />
-          ))}
+          {orderedOpponents.map((p, index) => {
+            const targetCount = multiTargetSelection.filter(id => id === p.id).length;
+            return (
+              <PlayerPod 
+                key={p.id} 
+                style={getOpponentStyle(index, orderedOpponents.length)}
+                player={p} 
+                isCurrent={p.id === currentPlayer?.id}
+                isTargetable={targeting}
+                onSelect={(targetId, event) => handlePlayerSelect(targetId, event)}
+                viewerIsGojo={viewerIsGojo}
+                isTraining={game.is_training}
+                onRemoveDummy={emitRemoveDummy}
+                targetCount={targetCount}
+              />
+            );
+          })}
         </div>
       </div>
       <div className="game-log">
@@ -287,7 +306,21 @@ const GamePage: React.FC = () => {
       </div>
       <div className="player-ui">
         <div className="own-player-pod">
-           <PlayerPod player={selfPlayer} isCurrent={isMyTurn} isTargetable={targeting} onSelect={(targetId, event) => handlePlayerSelect(targetId, event)} isSelf={true} onEndTurn={handleEndTurn} viewerIsGojo={viewerIsGojo} />
+           {(() => {
+             const targetCount = multiTargetSelection.filter(id => id === selfPlayer.id).length;
+             return (
+               <PlayerPod 
+                 player={selfPlayer} 
+                 isCurrent={isMyTurn} 
+                 isTargetable={targeting} 
+                 onSelect={(targetId, event) => handlePlayerSelect(targetId, event)} 
+                 isSelf={true} 
+                 onEndTurn={handleEndTurn} 
+                 viewerIsGojo={viewerIsGojo}
+                 targetCount={targetCount}
+               />
+             );
+           })()}
         </div>
         <div className="player-hand">
           {selfPlayer.hand.map((card, i) => (
