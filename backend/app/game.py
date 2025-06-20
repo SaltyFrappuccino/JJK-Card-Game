@@ -612,7 +612,16 @@ class GameManager:
              game.game_log.append(f"Жажда Развлечений дарует {target.nickname} {restore_amount} ПЭ!")
         
         # Jogo Passive (Heat Escalation)
-        if source_player and source_player.character and source_player.character.id == "jogo" and card_type == CardType.TECHNIQUE:
+        # Активируется если сам Дзёго использует технику ИЛИ если используется техника Дзёго (даже скопированная)
+        jogo_techniques = [
+            "jogo_lava_touch", "jogo_ember_insects", "jogo_volcano_eruption", 
+            "jogo_maximum_meteor", "jogo_coffin_of_the_iron_mountain"
+        ]
+        is_jogo_using_technique = (source_player and source_player.character and 
+                                  source_player.character.id == "jogo" and card_type == CardType.TECHNIQUE)
+        is_jogo_technique_card = (card and card.id in jogo_techniques)
+        
+        if source_player and (is_jogo_using_technique or is_jogo_technique_card):
             self._apply_jogo_heat_escalation(game, source_player, target)
 
         actual_damage = final_damage
@@ -705,9 +714,16 @@ class GameManager:
         if not target: return game
         
         damage = 300
-        if player.character and player.character.id == "itadori_yuji": 
-            damage += 150
+        # Бонус Итадори работает если сам Итадори использует Удар ИЛИ если кто-то использует скопированный Удар Итадори
+        is_itadori_player = (player.character and player.character.id == "itadori_yuji")
+        
+        # Всегда применяем бонус урона Итадори для карты "Удар"
+        damage += 150
+        
+        # Восстановление ПЭ только для самого Итадори
+        if is_itadori_player:
             player.energy = min(player.character.max_energy, player.energy + 1000)
+        
         if any(e.name == "mahito_true_form" for e in player.effects): damage *= 3
         
         final_damage = damage
@@ -754,14 +770,12 @@ class GameManager:
         target = self._find_player(game, target_id)
         if not target: return game
 
-        is_itadori = player.character and player.character.id == "itadori_yuji"
+        # Бонус Итадори работает если сам Итадори использует ЧВ ИЛИ если кто-то использует скопированную ЧВ Итадори
+        is_itadori_player = (player.character and player.character.id == "itadori_yuji")
         has_zone = any(e.name == "zone" for e in player.effects)
         
-        chance = 1
-        if is_itadori:
-            chance = 3 if has_zone else 2
-        elif has_zone:
-            chance = 2
+        # Всегда применяем бонус шанса Итадори для карты "Чёрная Вспышка"
+        chance = 3 if has_zone else 2
 
         roll = random.randint(1, 6)
         is_success = roll <= chance
@@ -920,8 +934,9 @@ class GameManager:
     def _effect_fioletovyi(self, game: Game, player: Player, target_id: str, targets_ids) -> Game:
         target = self._find_player(game, target_id)
         if not target: return game
-        card = next(c for c in player.character.unique_cards if c.id == 'gojo_purple')
-        self._deal_damage(game, player, target, 4000, ignores_block=True, card=card, card_type=card.type)
+        card = self._get_card_safe(player, 'gojo_purple')
+        card_type = card.type if card else CardType.TECHNIQUE
+        self._deal_damage(game, player, target, 4000, ignores_block=True, card=card, card_type=card_type)
         
         # Remove the prerequisite effects
         blue_effect = next((e for e in player.effects if e.name == "gojo_blue_effect"), None)
